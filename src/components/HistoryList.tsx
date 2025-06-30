@@ -373,7 +373,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
   }
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden">
+      <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50">
         <div className="p-4 sm:p-6 border-b border-slate-700/50">
           <h2 className="text-xl font-bold text-white">Your Founder Log</h2>
           <p className="text-slate-400 text-sm mt-1">
@@ -382,7 +382,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
         </div>
 
         <div className="divide-y divide-slate-700/30">
-          {entries.map((entry) => {
+          {entries.map((entry, index) => {
             const isPlaying = playingAudio?.id === entry.id;
             const isExpanded = expandedTranscripts[entry.id];
             const transcriptData = entry.transcription
@@ -390,14 +390,17 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
               : null;
             const isMenuOpen = openMenus[entry.id];
             const isDeleting = deletingId === entry.id;
+            const isLastItem = index === entries.length - 1;
 
             return (
               <div
                 key={entry.id}
-                className={`p-4 sm:p-6 hover:bg-slate-700/20 transition-all duration-300 ${
+                className={`relative p-4 sm:p-6 hover:bg-slate-700/20 transition-all duration-300 ${
                   isDeleting
                     ? "opacity-0 scale-95 transform bg-red-500/10 border-red-500/20"
                     : "opacity-100 scale-100"
+                } ${isMenuOpen ? "z-20" : "z-0"} ${
+                  isLastItem ? "rounded-b-2xl" : ""
                 }`}
               >
                 {/* Main content */}

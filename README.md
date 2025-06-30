@@ -4,20 +4,28 @@ Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 
 ## To Do
 
-MVP:
+### MVP
 
 - [x] Warn the user that updating the transcription will erase the previous one
-- [ ] Fix hover problem for the menu dropdown
+- [x] Fix hover problem for the menu dropdown
 - [ ] Add bolt 'powered-by' as [required for the Hackathon](https://worldslargesthackathon.devpost.com/details/badgeguidelines)
 - [ ] Deploy to Netlify
   - [ ] Add a link to the deployed app in the README
+  - [ ] Verify that everything is working correctly
 
-If there's time:
+[**What to Submit**](https://worldslargesthackathon.devpost.com/#:~:text=for%20more%20details.-,What%20to%20Submit,-Include%20a%20video):
+
+- [ ] Include a video (about 3 minutes) that demonstrates your submission. Videos must be uploaded to YouTube, Vimeo, or Facebook Video and made public.
+- [ ] Provide a URL to a publicly available version of the project that is fully functional as described for review and judging.
+- [ ] Confirm usage of Bolt.new to build the project and show the ‘Built with Bolt.new’ badge on your public project.
+- [ ] Provide the email used to build the project on Bolt.new. This email must be associated with the usage of Bolt.new to built the submitted project.
+
+### If there's time
 
 - [ ] Make it a PWA
 - [ ] Add Todoist integration
 
-Improvements for later:
+### Improvements for later
 
 - Features
   - [ ] Add global search
