@@ -1,8 +1,29 @@
 # bolt-hackathon-2025
 
-Code for Bolt's 2025 hackathon, aka World's Largest Hackathon
+Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 
-# React + TypeScript + Vite
+## To Do
+
+MVP:
+
+- [ ] Warn the user that updating the transcription will erase the previous one
+- [ ] Add bolt 'powered-by' as [required for the Hackathon](https://worldslargesthackathon.devpost.com/details/badgeguidelines)
+- [ ] Deploy to Netlify
+  - [ ] Add a link to the deployed app in the README
+
+If there's time:
+
+- [ ] Make it a PWA
+- [ ] Add Todoist integration
+
+Improvements for later:
+
+- Features
+  - [ ] Add global search
+- Performance
+  - [ ] Add pagination to the log history
+
+## App created from Vite template: React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
@@ -11,7 +32,7 @@ Currently, two official plugins are available:
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+### Expanding the ESLint configuration
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
