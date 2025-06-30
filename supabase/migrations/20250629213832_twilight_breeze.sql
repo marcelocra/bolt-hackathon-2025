@@ -1,14 +1,14 @@
 /*
   # Storage bucket setup (manual step required)
-  
+
   This migration handles storage configuration that can be done programmatically.
-  
+
   ## Manual Steps Required:
   1. Go to Supabase Dashboard > Storage
   2. Create a new bucket named 'audio-recordings'
   3. Set it as private (not public)
   4. The RLS policies will be handled automatically by Supabase for authenticated users
-  
+
   ## What this migration does:
   - Documents the storage requirements
   - Ensures the entries table is properly set up to reference storage files
