@@ -82,17 +82,21 @@ export class ApiService {
 
       // Prepare form data for ElevenLabs Speech-to-Text API
       const formData = new FormData();
-      formData.append("audio", audioBlob, "recording.webm");
-      formData.append("model_id", "whisper-1"); // Use Whisper model for transcription
+      formData.append("file", audioBlob, "recording.webm");
+      formData.append("model_id", "scribe_v1");
+      formData.append("language_code", "por");
 
       // Call ElevenLabs Speech-to-Text API
-      const response = await fetch("/api/elevenlabs/v1/speech-to-text", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: formData,
-      });
+      const response = await fetch(
+        "https://api.elevenlabs.io/v1/speech-to-text",
+        {
+          method: "POST",
+          headers: {
+            "xi-api-key": apiKey,
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();

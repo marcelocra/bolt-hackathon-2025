@@ -11,6 +11,7 @@ import {
   ChevronUp,
   FileText,
   MoreVertical,
+  RefreshCw,
 } from "lucide-react";
 import { ApiService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -452,26 +453,42 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
                       {isMenuOpen && !isDeleting && (
                         <div className="absolute right-0 top-12 bg-slate-800 border border-slate-700/50 rounded-lg shadow-2xl z-10 min-w-48">
                           <div className="py-2">
+                            {/* View Transcript button - only show if transcript exists */}
+                            {entry.transcription && (
+                              <button
+                                onClick={() => toggleTranscript(entry.id)}
+                                className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200 flex items-center space-x-2"
+                              >
+                                <FileText className="w-4 h-4" />
+                                <span>
+                                  {expandedTranscripts[entry.id]
+                                    ? "Hide Transcript"
+                                    : "View Transcript"}
+                                </span>
+                              </button>
+                            )}
+
+                            {/* Generate/Update Transcript button */}
                             <button
-                              onClick={() =>
-                                entry.transcription
-                                  ? toggleTranscript(entry.id)
-                                  : generateTranscript(entry.id)
-                              }
+                              onClick={() => generateTranscript(entry.id)}
                               disabled={transcribingId === entry.id}
                               className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200 flex items-center space-x-2"
                             >
                               {transcribingId === entry.id ? (
                                 <>
                                   <Loader2 className="w-4 h-4 animate-spin" />
-                                  <span>Generating...</span>
+                                  <span>
+                                    {entry.transcription
+                                      ? "Updating..."
+                                      : "Generating..."}
+                                  </span>
                                 </>
                               ) : (
                                 <>
-                                  <FileText className="w-4 h-4" />
+                                  <RefreshCw className="w-4 h-4" />
                                   <span>
                                     {entry.transcription
-                                      ? "View Transcript"
+                                      ? "Update Transcript"
                                       : "Generate Transcript"}
                                   </span>
                                 </>
