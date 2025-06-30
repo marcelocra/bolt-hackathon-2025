@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { ApiService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../services/supabaseClient";
 import type { Entry } from "../types";
 
 /**
@@ -70,6 +71,18 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
     fetchEntries();
   }, [fetchEntries, refreshTrigger]);
 
+  const updateProgress = React.useCallback(() => {
+    if (playingAudio) {
+      const progress =
+        (playingAudio.audio.currentTime / playingAudio.audio.duration) * 100;
+      setPlayingAudio((prev) => (prev ? { ...prev, progress } : null));
+    }
+  }, [playingAudio]);
+
+  const handleAudioEnded = React.useCallback(() => {
+    setPlayingAudio(null);
+  }, []);
+
   // Cleanup audio when component unmounts
   useEffect(() => {
     return () => {
@@ -79,7 +92,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
         playingAudio.audio.removeEventListener("ended", handleAudioEnded);
       }
     };
-  }, []);
+  }, [playingAudio, updateProgress, handleAudioEnded]);
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -91,19 +104,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const updateProgress = () => {
-    if (playingAudio) {
-      const progress =
-        (playingAudio.audio.currentTime / playingAudio.audio.duration) * 100;
-      setPlayingAudio((prev) => (prev ? { ...prev, progress } : null));
-    }
-  };
-
-  const handleAudioEnded = () => {
-    setPlayingAudio(null);
-  };
-
-  const playAudio = (entry: Entry) => {
+  const playAudio = async (entry: Entry) => {
     // Stop current audio if playing
     if (playingAudio) {
       playingAudio.audio.pause();
@@ -112,30 +113,55 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
     }
 
     // Prioritize processed audio URL for better browser compatibility, fallback to original
-    const audioUrl = entry.processed_audio_url || entry.original_audio_url;
-    if (!audioUrl) {
-      console.error("No audio URL available for playback");
+    const audioPath = entry.processed_audio_url || entry.original_audio_url;
+    if (!audioPath) {
+      console.error("No audio path available for playback");
       return;
     }
 
-    const audio = new Audio(audioUrl);
+    try {
+      // Create a signed URL for the private audio file (valid for 1 hour)
+      const { data, error } = await supabase.storage
+        .from("audio-recordings")
+        .createSignedUrl(audioPath, 3600);
 
-    audio.addEventListener("loadedmetadata", () => {
-      setPlayingAudio({
-        id: entry.id,
-        audio,
-        progress: 0,
-        duration: audio.duration,
+      if (error) {
+        throw new Error(`Failed to create signed URL: ${error.message}`);
+      }
+
+      if (!data?.signedUrl) {
+        throw new Error("No signed URL returned");
+      }
+
+      const audio = new Audio(data.signedUrl);
+
+      audio.addEventListener("loadedmetadata", () => {
+        setPlayingAudio({
+          id: entry.id,
+          audio,
+          progress: 0,
+          duration: audio.duration,
+        });
+
+        // Play the audio after metadata is loaded
+        audio.play().catch((error) => {
+          console.error("Error playing audio:", error);
+          setPlayingAudio(null);
+        });
       });
-    });
 
-    audio.addEventListener("timeupdate", updateProgress);
-    audio.addEventListener("ended", handleAudioEnded);
+      audio.addEventListener("timeupdate", updateProgress);
+      audio.addEventListener("ended", handleAudioEnded);
 
-    audio.play().catch((error) => {
-      console.error("Error playing audio:", error);
+      // Handle loading errors
+      audio.addEventListener("error", (error) => {
+        console.error("Error loading audio:", error);
+        setPlayingAudio(null);
+      });
+    } catch (error) {
+      console.error("Error creating signed URL or playing audio:", error);
       setPlayingAudio(null);
-    });
+    }
   };
 
   const pauseAudio = () => {
@@ -200,8 +226,28 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
         throw new Error("Entry or audio URL not found");
       }
 
-      // Fetch the audio blob from the URL
-      const response = await fetch(entry.original_audio_url);
+      // Create a signed URL for the private audio file
+      const { data, error } = await supabase.storage
+        .from("audio-recordings")
+        .createSignedUrl(entry.original_audio_url, 3600);
+
+      if (error) {
+        throw new Error(`Failed to create signed URL: ${error.message}`);
+      }
+
+      if (!data?.signedUrl) {
+        throw new Error("No signed URL returned");
+      }
+
+      // Fetch the audio blob using the signed URL
+      const response = await fetch(data.signedUrl);
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch audio: ${response.status} ${response.statusText}`
+        );
+      }
+
       const audioBlob = await response.blob();
 
       // Generate transcription using the API service
@@ -237,7 +283,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
     });
   };
 
-  const formatDuration = (seconds: number | null): string => {
+  const formatDuration = (seconds: number | null | undefined): string => {
     if (!seconds) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;

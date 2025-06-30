@@ -144,11 +144,9 @@ export class ApiService {
 
       if (error) throw error;
 
-      const { data: publicUrl } = supabase.storage
-        .from("audio-recordings")
-        .getPublicUrl(data.path);
-
-      return publicUrl.publicUrl;
+      // Return the file path instead of public URL since bucket is private
+      // We'll create signed URLs when needed for playback
+      return data.path;
     } catch (error) {
       console.error("Error uploading audio:", error);
       return null;
