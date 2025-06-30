@@ -1,36 +1,39 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, Loader2 } from 'lucide-react';
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { Mail, Lock, User, Loader2 } from "lucide-react";
 
 /**
  * Authentication component handling sign in and sign up
  */
 
 interface AuthProps {
-  mode?: 'signin' | 'signup';
-  onModeChange?: (mode: 'signin' | 'signup') => void;
+  mode?: "signin" | "signup";
+  onModeChange?: (mode: "signin" | "signup") => void;
 }
 
-export const Auth: React.FC<AuthProps> = ({ mode = 'signin', onModeChange }) => {
+export const Auth: React.FC<AuthProps> = ({
+  mode = "signin",
+  onModeChange,
+}) => {
   const { signIn, signUp } = useAuth();
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      if (mode === 'signin') {
+      if (mode === "signin") {
         await signIn(email, password);
       } else {
         await signUp(email, password);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -44,19 +47,21 @@ export const Auth: React.FC<AuthProps> = ({ mode = 'signin', onModeChange }) => 
             <User className="w-8 h-8 text-blue-400" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">
-            {mode === 'signin' ? 'Welcome Back' : 'Join Janus Arc'}
+            {mode === "signin" ? "Welcome Back" : "Join Janus Arc"}
           </h2>
           <p className="text-slate-400">
-            {mode === 'signin' 
-              ? 'Access your AI-powered founder log' 
-              : 'Start your AI-enhanced founder journey'
-            }
+            {mode === "signin"
+              ? "Access your AI-powered founder log"
+              : "Start your AI-enhanced founder journey"}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-slate-300 mb-2"
+            >
               Email Address
             </label>
             <div className="relative">
@@ -75,7 +80,10 @@ export const Auth: React.FC<AuthProps> = ({ mode = 'signin', onModeChange }) => 
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-slate-300 mb-2"
+            >
               Password
             </label>
             <div className="relative">
@@ -108,10 +116,12 @@ export const Auth: React.FC<AuthProps> = ({ mode = 'signin', onModeChange }) => 
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>{mode === 'signin' ? 'Signing In...' : 'Creating Account...'}</span>
+                <span>
+                  {mode === "signin" ? "Signing In..." : "Creating Account..."}
+                </span>
               </>
             ) : (
-              <span>{mode === 'signin' ? 'Sign In' : 'Create Account'}</span>
+              <span>{mode === "signin" ? "Sign In" : "Create Account"}</span>
             )}
           </button>
         </form>
@@ -119,13 +129,17 @@ export const Auth: React.FC<AuthProps> = ({ mode = 'signin', onModeChange }) => 
         {onModeChange && (
           <div className="mt-6 text-center">
             <p className="text-slate-400">
-              {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
+              {mode === "signin"
+                ? "Don't have an account? "
+                : "Already have an account? "}
               <button
-                onClick={() => onModeChange(mode === 'signin' ? 'signup' : 'signin')}
+                onClick={() =>
+                  onModeChange(mode === "signin" ? "signup" : "signin")
+                }
                 className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
                 disabled={loading}
               >
-                {mode === 'signin' ? 'Sign Up' : 'Sign In'}
+                {mode === "signin" ? "Sign Up" : "Sign In"}
               </button>
             </p>
           </div>

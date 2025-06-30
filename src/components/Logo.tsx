@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 /**
  * Janus Arc logo component - abstract design suggesting dual faces or connecting arc
@@ -10,7 +10,7 @@ interface LogoProps {
   size?: number;
 }
 
-export const Logo: React.FC<LogoProps> = ({ className = '', size = 32 }) => {
+export const Logo: React.FC<LogoProps> = ({ className = "", size = 32 }) => {
   return (
     <svg
       width={size}
@@ -28,7 +28,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 32 }) => {
         strokeLinecap="round"
         className="text-blue-400"
       />
-      
+
       {/* Right arc representing another perspective */}
       <path
         d="M28 16C28 22.627 22.627 28 16 28C13.613 28 11.324 27.158 9.515 25.657"
@@ -37,7 +37,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 32 }) => {
         strokeLinecap="round"
         className="text-blue-400"
       />
-      
+
       {/* Central connecting elements */}
       <circle
         cx="16"
@@ -53,7 +53,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 32 }) => {
         fill="currentColor"
         className="text-blue-500"
       />
-      
+
       {/* Subtle gradient overlay */}
       <defs>
         <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">

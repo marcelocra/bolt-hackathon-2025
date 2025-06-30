@@ -1,5 +1,5 @@
-import { supabase } from './supabaseClient';
-import type { Entry, ProcessAudioResponse } from '../types';
+import { supabase } from "./supabaseClient";
+import type { Entry, ProcessAudioResponse } from "../types";
 
 /**
  * API service for handling audio processing and database operations
@@ -17,21 +17,26 @@ export class ApiService {
       // Generate transcription only
       const transcription = await ApiService.generateTranscription(audioBlob);
 
-      console.log('Audio processing completed successfully (transcription only)');
-      
+      console.log(
+        "Audio processing completed successfully (transcription only)"
+      );
+
       return {
         transcription,
         processedAudioUrl: null, // No longer processing audio, just transcription
         success: true,
       };
     } catch (error) {
-      console.error('Error processing audio:', error);
-      
+      console.error("Error processing audio:", error);
+
       return {
-        transcription: 'Transcription failed - please try again',
+        transcription: "Transcription failed - please try again",
         processedAudioUrl: null,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred during transcription',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown error occurred during transcription",
       };
     }
   }
@@ -42,86 +47,110 @@ export class ApiService {
   static async generateTranscription(audioBlob: Blob): Promise<string> {
     if (!ENABLE_ELEVENLABS) {
       // Placeholder implementation for development
-      console.log('ElevenLabs integration disabled - using placeholder transcription');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return `Placeholder transcription generated on ${new Date().toLocaleString()} - Duration: ${Math.round(audioBlob.size / 1000)}KB`;
+      console.log(
+        "ElevenLabs integration disabled - using placeholder transcription"
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return `Placeholder transcription generated on ${new Date().toLocaleString()} - Duration: ${Math.round(
+        audioBlob.size / 1000
+      )}KB`;
     }
 
     try {
       const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
-      
+
       if (!apiKey) {
-        console.warn('ElevenLabs API key not found, using placeholder transcription');
-        return `Transcription generated on ${new Date().toLocaleString()} - Duration: ${Math.round(audioBlob.size / 1000)}KB`;
+        console.warn(
+          "ElevenLabs API key not found, using placeholder transcription"
+        );
+        return `Transcription generated on ${new Date().toLocaleString()} - Duration: ${Math.round(
+          audioBlob.size / 1000
+        )}KB`;
       }
 
       // Validate API key format
-      if (!apiKey.startsWith('sk_')) {
-        console.warn('Invalid ElevenLabs API key format, using placeholder transcription');
-        return `Transcription generated on ${new Date().toLocaleString()} - Duration: ${Math.round(audioBlob.size / 1000)}KB`;
+      if (!apiKey.startsWith("sk_")) {
+        console.warn(
+          "Invalid ElevenLabs API key format, using placeholder transcription"
+        );
+        return `Transcription generated on ${new Date().toLocaleString()} - Duration: ${Math.round(
+          audioBlob.size / 1000
+        )}KB`;
       }
 
-      console.log('Generating transcription with ElevenLabs...');
-      
+      console.log("Generating transcription with ElevenLabs...");
+
       // Prepare form data for ElevenLabs Speech-to-Text API
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
-      formData.append('model_id', 'whisper-1'); // Use Whisper model for transcription
-      
+      formData.append("audio", audioBlob, "recording.webm");
+      formData.append("model_id", "whisper-1"); // Use Whisper model for transcription
+
       // Call ElevenLabs Speech-to-Text API
-      const response = await fetch('/api/elevenlabs/v1/speech-to-text', {
-        method: 'POST',
+      const response = await fetch("/api/elevenlabs/v1/speech-to-text", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: formData,
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('ElevenLabs transcription API error:', response.status, errorText);
-        throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+        console.error(
+          "ElevenLabs transcription API error:",
+          response.status,
+          errorText
+        );
+        throw new Error(
+          `ElevenLabs API error: ${response.status} - ${errorText}`
+        );
       }
 
       const result = await response.json();
-      
+
       if (result.text) {
-        console.log('Transcription generated successfully');
+        console.log("Transcription generated successfully");
         return result.text;
       } else {
-        throw new Error('No transcription text returned from API');
+        throw new Error("No transcription text returned from API");
       }
     } catch (error) {
-      console.error('Error generating transcription with ElevenLabs:', error);
+      console.error("Error generating transcription with ElevenLabs:", error);
       // Fallback to placeholder if API fails
-      return `Transcription failed on ${new Date().toLocaleString()} - please try again later. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      return `Transcription failed on ${new Date().toLocaleString()} - please try again later. Error: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`;
     }
   }
 
   /**
    * Upload original audio file to Supabase storage
    */
-  static async uploadAudio(audioBlob: Blob, fileName: string, userId: string): Promise<string | null> {
+  static async uploadAudio(
+    audioBlob: Blob,
+    fileName: string,
+    userId: string
+  ): Promise<string | null> {
     try {
       // Create user-specific path
       const filePath = `${userId}/${fileName}`;
-      
+
       const { data, error } = await supabase.storage
-        .from('audio-recordings')
+        .from("audio-recordings")
         .upload(filePath, audioBlob, {
-          contentType: 'audio/webm',
+          contentType: "audio/webm",
           upsert: false,
         });
 
       if (error) throw error;
 
       const { data: publicUrl } = supabase.storage
-        .from('audio-recordings')
+        .from("audio-recordings")
         .getPublicUrl(data.path);
 
       return publicUrl.publicUrl;
     } catch (error) {
-      console.error('Error uploading audio:', error);
+      console.error("Error uploading audio:", error);
       return null;
     }
   }
@@ -129,10 +158,12 @@ export class ApiService {
   /**
    * Save audio entry to database
    */
-  static async saveEntry(entry: Omit<Entry, 'id' | 'created_at' | 'updated_at'>): Promise<Entry | null> {
+  static async saveEntry(
+    entry: Omit<Entry, "id" | "created_at" | "updated_at">
+  ): Promise<Entry | null> {
     try {
       const { data, error } = await supabase
-        .from('entries')
+        .from("entries")
         .insert(entry)
         .select()
         .single();
@@ -140,7 +171,7 @@ export class ApiService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error saving entry:', error);
+      console.error("Error saving entry:", error);
       return null;
     }
   }
@@ -148,16 +179,19 @@ export class ApiService {
   /**
    * Update entry transcription in database
    */
-  static async updateEntryTranscription(entryId: string, transcription: string): Promise<boolean> {
+  static async updateEntryTranscription(
+    entryId: string,
+    transcription: string
+  ): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('entries')
+        .from("entries")
         .update({ transcription, updated_at: new Date().toISOString() })
-        .eq('id', entryId);
+        .eq("id", entryId);
 
       return !error;
     } catch (error) {
-      console.error('Error updating entry transcription:', error);
+      console.error("Error updating entry transcription:", error);
       return false;
     }
   }
@@ -168,15 +202,15 @@ export class ApiService {
   static async fetchEntries(userId: string): Promise<Entry[]> {
     try {
       const { data, error } = await supabase
-        .from('entries')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .from("entries")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.error('Error fetching entries:', error);
+      console.error("Error fetching entries:", error);
       return [];
     }
   }
@@ -188,25 +222,28 @@ export class ApiService {
     try {
       // First get the entry to find associated files
       const { data: entry, error: fetchError } = await supabase
-        .from('entries')
-        .select('original_audio_url, processed_audio_url, user_id')
-        .eq('id', entryId)
+        .from("entries")
+        .select("original_audio_url, processed_audio_url, user_id")
+        .eq("id", entryId)
         .single();
 
       if (fetchError) throw fetchError;
 
       // Delete associated audio files from storage
       const filesToDelete: string[] = [];
-      
+
       if (entry.original_audio_url) {
-        const originalPath = entry.original_audio_url.split('/').pop();
+        const originalPath = entry.original_audio_url.split("/").pop();
         if (originalPath) {
           filesToDelete.push(`${entry.user_id}/${originalPath}`);
         }
       }
-      
-      if (entry.processed_audio_url && entry.processed_audio_url !== entry.original_audio_url) {
-        const processedPath = entry.processed_audio_url.split('/').pop();
+
+      if (
+        entry.processed_audio_url &&
+        entry.processed_audio_url !== entry.original_audio_url
+      ) {
+        const processedPath = entry.processed_audio_url.split("/").pop();
         if (processedPath) {
           filesToDelete.push(`${entry.user_id}/${processedPath}`);
         }
@@ -215,23 +252,23 @@ export class ApiService {
       // Delete files from storage
       if (filesToDelete.length > 0) {
         const { error: storageError } = await supabase.storage
-          .from('audio-recordings')
+          .from("audio-recordings")
           .remove(filesToDelete);
-        
+
         if (storageError) {
-          console.warn('Error deleting storage files:', storageError);
+          console.warn("Error deleting storage files:", storageError);
         }
       }
 
       // Delete the database entry
       const { error: deleteError } = await supabase
-        .from('entries')
+        .from("entries")
         .delete()
-        .eq('id', entryId);
+        .eq("id", entryId);
 
       return !deleteError;
     } catch (error) {
-      console.error('Error deleting entry:', error);
+      console.error("Error deleting entry:", error);
       return false;
     }
   }

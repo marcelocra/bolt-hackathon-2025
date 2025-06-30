@@ -45,8 +45,8 @@ export interface AuthContextType {
 }
 
 // Additional utility types for better type safety
-export type EntryInsert = Omit<Entry, 'id' | 'created_at' | 'updated_at'>;
-export type EntryUpdate = Partial<Omit<Entry, 'id' | 'user_id' | 'created_at'>>;
+export type EntryInsert = Omit<Entry, "id" | "created_at" | "updated_at">;
+export type EntryUpdate = Partial<Omit<Entry, "id" | "user_id" | "created_at">>;
 
 // API response types
 export interface ApiResponse<T = any> {
@@ -56,7 +56,7 @@ export interface ApiResponse<T = any> {
 }
 
 // Audio processing status
-export type ProcessingStatus = 'idle' | 'processing' | 'completed' | 'failed';
+export type ProcessingStatus = "idle" | "processing" | "completed" | "failed";
 
 // Transcription service types
 export interface TranscriptionOptions {
