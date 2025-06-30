@@ -6,7 +6,8 @@ Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 
 MVP:
 
-- [ ] Warn the user that updating the transcription will erase the previous one
+- [x] Warn the user that updating the transcription will erase the previous one
+- [ ] Fix hover problem for the menu dropdown
 - [ ] Add bolt 'powered-by' as [required for the Hackathon](https://worldslargesthackathon.devpost.com/details/badgeguidelines)
 - [ ] Deploy to Netlify
   - [ ] Add a link to the deployed app in the README

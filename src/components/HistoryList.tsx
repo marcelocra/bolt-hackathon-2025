@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import {
   Play,
   Pause,
@@ -16,6 +15,7 @@ import {
 import { ApiService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../services/supabaseClient";
+import { ConfirmationModal } from "./ConfirmationModal";
 import type { Entry } from "../types";
 
 /**
@@ -52,6 +52,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
     null
   );
+  const [showTranscriptUpdateConfirm, setShowTranscriptUpdateConfirm] =
+    useState<string | null>(null);
   const [transcribingId, setTranscribingId] = useState<string | null>(null);
   const [openMenus, setOpenMenus] = useState<OpenMenus>({});
 
@@ -188,6 +190,20 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
 
   const cancelDelete = () => {
     setShowDeleteConfirm(null);
+  };
+
+  const confirmTranscriptUpdate = (entryId: string) => {
+    setShowTranscriptUpdateConfirm(entryId);
+    setOpenMenus({});
+  };
+
+  const cancelTranscriptUpdate = () => {
+    setShowTranscriptUpdateConfirm(null);
+  };
+
+  const proceedWithTranscriptUpdate = (entryId: string) => {
+    setShowTranscriptUpdateConfirm(null);
+    generateTranscript(entryId);
   };
 
   const deleteEntry = async (entryId: string) => {
@@ -470,7 +486,11 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
 
                             {/* Generate/Update Transcript button */}
                             <button
-                              onClick={() => generateTranscript(entry.id)}
+                              onClick={() =>
+                                entry.transcription
+                                  ? confirmTranscriptUpdate(entry.id)
+                                  : generateTranscript(entry.id)
+                              }
                               disabled={transcribingId === entry.id}
                               className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200 flex items-center space-x-2"
                             >
@@ -572,47 +592,40 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
         </div>
       </div>
 
-      {/* Delete confirmation modal - rendered using portal for proper viewport centering */}
-      {showDeleteConfirm &&
-        createPortal(
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-slate-700/50 shadow-2xl">
-              <div className="text-center space-y-4">
-                <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
-                  <Trash2 className="w-6 h-6 text-red-400" />
-                </div>
+      {/* Confirmation Modals */}
+      <ConfirmationModal
+        isOpen={!!showDeleteConfirm}
+        onConfirm={() => deleteEntry(showDeleteConfirm!)}
+        onCancel={cancelDelete}
+        title="Delete Entry"
+        message={`This will permanently delete "${
+          entries.find((e) => e.id === showDeleteConfirm)?.title
+        }" and all associated audio files. This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
+        icon={Trash2}
+        iconClass="text-red-400"
+        iconBgClass="bg-red-500/20"
+      />
 
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    Delete Entry
-                  </h3>
-                  <p className="text-slate-400 text-sm">
-                    This will permanently delete "
-                    {entries.find((e) => e.id === showDeleteConfirm)?.title}"
-                    and all associated audio files. This action cannot be
-                    undone.
-                  </p>
-                </div>
-
-                <div className="flex space-x-3">
-                  <button
-                    onClick={cancelDelete}
-                    className="flex-1 py-2 px-4 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-all duration-200 text-sm font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => deleteEntry(showDeleteConfirm)}
-                    className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 text-sm font-medium"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+      <ConfirmationModal
+        isOpen={!!showTranscriptUpdateConfirm}
+        onConfirm={() =>
+          proceedWithTranscriptUpdate(showTranscriptUpdateConfirm!)
+        }
+        onCancel={cancelTranscriptUpdate}
+        title="Update Transcript"
+        message={`This will permanently replace the existing transcript for "${
+          entries.find((e) => e.id === showTranscriptUpdateConfirm)?.title
+        }". The previous transcription will be lost and cannot be recovered.`}
+        confirmText="Update"
+        cancelText="Cancel"
+        confirmButtonClass="bg-orange-500 hover:bg-orange-600"
+        icon={RefreshCw}
+        iconClass="text-orange-400"
+        iconBgClass="bg-orange-500/20"
+      />
     </div>
   );
 };
