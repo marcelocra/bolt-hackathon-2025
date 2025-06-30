@@ -193,21 +193,29 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
     setDeletingId(entryId);
     setShowDeleteConfirm(null);
 
-    try {
-      const success = await ApiService.deleteEntry(entryId);
-      if (success) {
-        setEntries((prev) => prev.filter((entry) => entry.id !== entryId));
-        // Stop audio if the deleted entry was playing
-        if (playingAudio && playingAudio.id === entryId) {
-          playingAudio.audio.pause();
-          setPlayingAudio(null);
+    // Add a small delay to show the delete animation
+    setTimeout(async () => {
+      try {
+        const success = await ApiService.deleteEntry(entryId);
+        if (success) {
+          // Animate out before removing from state
+          setTimeout(() => {
+            setEntries((prev) => prev.filter((entry) => entry.id !== entryId));
+            // Stop audio if the deleted entry was playing
+            if (playingAudio && playingAudio.id === entryId) {
+              playingAudio.audio.pause();
+              setPlayingAudio(null);
+            }
+            setDeletingId(null);
+          }, 300); // Match animation duration
+        } else {
+          setDeletingId(null);
         }
+      } catch (error) {
+        console.error("Error deleting entry:", error);
+        setDeletingId(null);
       }
-    } catch (error) {
-      console.error("Error deleting entry:", error);
-    } finally {
-      setDeletingId(null);
-    }
+    }, 100); // Small delay to show initial delete state
   };
 
   const toggleTranscript = (entryId: string) => {
@@ -364,14 +372,23 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
               ? truncateText(entry.transcription)
               : null;
             const isMenuOpen = openMenus[entry.id];
+            const isDeleting = deletingId === entry.id;
 
             return (
               <div
                 key={entry.id}
-                className="p-4 sm:p-6 hover:bg-slate-700/20 transition-all duration-200"
+                className={`p-4 sm:p-6 hover:bg-slate-700/20 transition-all duration-300 ${
+                  isDeleting
+                    ? "opacity-0 scale-95 transform bg-red-500/10 border-red-500/20"
+                    : "opacity-100 scale-100"
+                }`}
               >
                 {/* Main content */}
-                <div className="space-y-4">
+                <div
+                  className={`space-y-4 transition-all duration-300 ${
+                    isDeleting ? "opacity-60" : "opacity-100"
+                  }`}
+                >
                   {/* Header with title, play button, and actions */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -381,10 +398,15 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
                           isPlaying ? pauseAudio() : playAudio(entry)
                         }
                         disabled={
-                          !entry.original_audio_url &&
-                          !entry.processed_audio_url
+                          (!entry.original_audio_url &&
+                            !entry.processed_audio_url) ||
+                          isDeleting
                         }
-                        className="w-10 h-10 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-600 disabled:cursor-not-allowed rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-blue-500/25 flex-shrink-0 mt-1"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg flex-shrink-0 mt-1 ${
+                          isDeleting
+                            ? "bg-red-500/50 cursor-not-allowed"
+                            : "bg-blue-500 hover:bg-blue-600 disabled:bg-slate-600 disabled:cursor-not-allowed hover:shadow-blue-500/25"
+                        }`}
                       >
                         {isPlaying ? (
                           <Pause className="w-4 h-4 text-white" />
@@ -416,13 +438,18 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
                     <div className="relative flex-shrink-0">
                       <button
                         onClick={(e) => toggleMenu(entry.id, e)}
-                        className="w-10 h-10 bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-slate-300 rounded-full flex items-center justify-center transition-all duration-200"
+                        disabled={isDeleting}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                          isDeleting
+                            ? "bg-red-500/20 text-red-400 cursor-not-allowed"
+                            : "bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-slate-300"
+                        }`}
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
 
                       {/* Dropdown menu */}
-                      {isMenuOpen && (
+                      {isMenuOpen && !isDeleting && (
                         <div className="absolute right-0 top-12 bg-slate-800 border border-slate-700/50 rounded-lg shadow-2xl z-10 min-w-48">
                           <div className="py-2">
                             <button

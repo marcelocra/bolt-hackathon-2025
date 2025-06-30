@@ -30,6 +30,7 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
     duration: 0,
     error: null,
   });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -268,23 +269,30 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
   };
 
   const resetRecording = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
+    setIsDeleting(true);
 
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+    // Animate the deletion
+    setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
 
-    setRecordingState({
-      isRecording: false,
-      isLoading: false,
-      isPlaying: false,
-      audioBlob: null,
-      duration: 0,
-      error: null,
-    });
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+
+      setRecordingState({
+        isRecording: false,
+        isLoading: false,
+        isPlaying: false,
+        audioBlob: null,
+        duration: 0,
+        error: null,
+      });
+
+      setIsDeleting(false);
+    }, 300); // 300ms animation duration
   }, []);
 
   // Cleanup on unmount
@@ -345,13 +353,19 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
             </div>
           ) : (
             // Playback and save controls
-            <div className="flex flex-col items-center space-y-6 w-full">
+            <div
+              className={`flex flex-col items-center space-y-6 w-full transition-all duration-300 ${
+                isDeleting
+                  ? "opacity-0 scale-95 transform"
+                  : "opacity-100 scale-100"
+              }`}
+            >
               <div className="flex items-center space-x-4">
                 <button
                   onClick={
                     recordingState.isPlaying ? pausePlayback : playRecording
                   }
-                  disabled={recordingState.isLoading}
+                  disabled={recordingState.isLoading || isDeleting}
                   className="w-12 h-12 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
                 >
                   {recordingState.isPlaying ? (
@@ -374,15 +388,17 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
               <div className="flex space-x-3 w-full">
                 <button
                   onClick={resetRecording}
-                  disabled={recordingState.isLoading}
-                  className="flex-1 py-3 px-4 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-600/50 text-white rounded-lg transition-all duration-200 font-medium"
+                  disabled={recordingState.isLoading || isDeleting}
+                  className={`flex-1 py-3 px-4 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-600/50 text-white rounded-lg transition-all duration-200 font-medium ${
+                    isDeleting ? "bg-red-500 animate-pulse" : ""
+                  }`}
                 >
-                  Re-record
+                  {isDeleting ? "Deleting..." : "Re-record"}
                 </button>
 
                 <button
                   onClick={saveRecording}
-                  disabled={recordingState.isLoading}
+                  disabled={recordingState.isLoading || isDeleting}
                   className="flex-1 py-3 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 font-medium shadow-lg hover:shadow-blue-500/25"
                 >
                   {recordingState.isLoading ? (
