@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Play,
   Pause,
@@ -345,7 +346,6 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
       </div>
     );
   }
-
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden">
@@ -522,50 +522,53 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
                     </div>
                   )}
                 </div>
-
-                {/* Delete confirmation modal */}
-                {showDeleteConfirm === entry.id && (
-                  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-slate-700/50 shadow-2xl">
-                      <div className="text-center space-y-4">
-                        <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
-                          <Trash2 className="w-6 h-6 text-red-400" />
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-2">
-                            Delete Entry
-                          </h3>
-                          <p className="text-slate-400 text-sm">
-                            This will permanently delete "{entry.title}" and all
-                            associated audio files. This action cannot be
-                            undone.
-                          </p>
-                        </div>
-
-                        <div className="flex space-x-3">
-                          <button
-                            onClick={cancelDelete}
-                            className="flex-1 py-2 px-4 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-all duration-200 text-sm font-medium"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => deleteEntry(entry.id)}
-                            className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Delete confirmation modal - rendered using portal for proper viewport centering */}
+      {showDeleteConfirm &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-slate-700/50 shadow-2xl">
+              <div className="text-center space-y-4">
+                <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
+                  <Trash2 className="w-6 h-6 text-red-400" />
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    Delete Entry
+                  </h3>
+                  <p className="text-slate-400 text-sm">
+                    This will permanently delete "
+                    {entries.find((e) => e.id === showDeleteConfirm)?.title}"
+                    and all associated audio files. This action cannot be
+                    undone.
+                  </p>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={cancelDelete}
+                    className="flex-1 py-2 px-4 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-all duration-200 text-sm font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => deleteEntry(showDeleteConfirm)}
+                    className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
