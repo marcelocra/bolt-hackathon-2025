@@ -17,7 +17,10 @@ applyTo: "**"
 - Write unit tests for new features and bug fixes; use descriptive test names.
 - Use version control best practices (atomic commits, clear messages).
 - Prioritize security: validate user input, avoid hardcoded secrets, follow OWASP guidelines.
-- Optimize for performance only when necessary; prefer clarity first.
+- Create modern user interfaces (UIs) that are intuitive and user-friendly, with great user experience (UX) and performance.
+- Use mobile-first design principles, but ensure responsiveness for larger devices.
+- Focus on making above-the-fold content be engaging, clear, and fast-loading.
+- Optimize for performance whevener possible, but prefer clarity.
 - Use environment variables for configuration/secrets.
 - Follow DRY (Don't Repeat Yourself), KISS (Keep It Simple), and YAGNI (You Aren't Gonna Need It) principles.
 - Ensure cross-platform compatibility where possible.
