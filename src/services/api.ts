@@ -1,5 +1,6 @@
 import { supabase } from "./supabaseClient";
 import type { Entry, ProcessAudioResponse } from "../types";
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
 /**
  * API service for handling audio processing and database operations
@@ -7,6 +8,8 @@ import type { Entry, ProcessAudioResponse } from "../types";
 
 // Debug flag to enable/disable ElevenLabs integration
 const ENABLE_ELEVENLABS = true; // Set to false to use placeholder implementation
+
+let client: ElevenLabsClient | null = null;
 
 export class ApiService {
   /**
@@ -80,41 +83,20 @@ export class ApiService {
 
       console.log("Generating transcription with ElevenLabs...");
 
-      // Prepare form data for ElevenLabs Speech-to-Text API
-      const formData = new FormData();
-      formData.append("file", audioBlob, "recording.webm");
-      formData.append("model_id", "scribe_v1");
-      formData.append("language_code", "por");
-
-      // Call ElevenLabs Speech-to-Text API
-      const response = await fetch(
-        "https://api.elevenlabs.io/v1/speech-to-text",
-        {
-          method: "POST",
-          headers: {
-            "xi-api-key": apiKey,
-          },
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(
-          "ElevenLabs transcription API error:",
-          response.status,
-          errorText
-        );
-        throw new Error(
-          `ElevenLabs API error: ${response.status} - ${errorText}`
-        );
+      if (!client) {
+        client = new ElevenLabsClient({ apiKey });
       }
+      const response = await client.speechToText.convert({
+        modelId: "scribe_v1",
+        file: audioBlob,
+        languageCode: "por",
+      });
 
-      const result = await response.json();
+      const result = response.text;
 
-      if (result.text) {
+      if (result && result.trim().length > 0) {
         console.log("Transcription generated successfully");
-        return result.text;
+        return result;
       } else {
         throw new Error("No transcription text returned from API");
       }
