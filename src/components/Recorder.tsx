@@ -308,7 +308,7 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
   }, []);
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-4xl mx-auto">
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-slate-700/50">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-white mb-2">AI Founder Log</h2>
