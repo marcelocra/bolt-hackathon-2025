@@ -7,6 +7,7 @@ import {
   Loader2,
   Save,
   AlertCircle,
+  Globe,
 } from "lucide-react";
 import { ApiService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -31,6 +32,9 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
     error: null,
   });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(() =>
+    ApiService.detectUserLanguage()
+  );
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -210,7 +214,8 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
       // Process audio for transcription
       console.log("Processing audio for transcription...");
       const processResult = await ApiService.processAudio(
-        recordingState.audioBlob
+        recordingState.audioBlob,
+        selectedLanguage
       );
 
       // Generate a more descriptive title
@@ -260,7 +265,13 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
             : "Failed to save recording. Please try again.",
       }));
     }
-  }, [recordingState.audioBlob, recordingState.duration, user, onEntryCreated]);
+  }, [
+    recordingState.audioBlob,
+    recordingState.duration,
+    user,
+    onEntryCreated,
+    selectedLanguage,
+  ]);
 
   const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -315,6 +326,32 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
           <p className="text-slate-400">
             Capture your startup insights and decisions
           </p>
+        </div>
+
+        {/* Language Selection */}
+        <div className="mb-6 flex justify-center">
+          <div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600/50">
+            <div className="flex items-center space-x-3">
+              <Globe className="w-4 h-4 text-slate-400" />
+              <span className="text-slate-300 text-sm font-medium">
+                Language:
+              </span>
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={
+                  recordingState.isRecording || recordingState.isLoading
+                }
+              >
+                {ApiService.getSupportedLanguages().map((lang) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Recording Controls */}

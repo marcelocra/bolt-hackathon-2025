@@ -2,23 +2,46 @@
 
 Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 
-## To Do
-
-### MVP
-
-- [x] Warn the user that updating the transcription will erase the previous one
-- [x] Fix hover problem for the menu dropdown
-- [x] Add bolt 'powered-by' as [required for the Hackathon](https://worldslargesthackathon.devpost.com/details/badgeguidelines)
-- [ ] Deploy to Netlify
-  - [ ] Add a link to the deployed app in the README
-  - [ ] Verify that everything is working correctly
+## Hackathon Submission
 
 [**What to Submit**](https://worldslargesthackathon.devpost.com/#:~:text=for%20more%20details.-,What%20to%20Submit,-Include%20a%20video):
 
 - [ ] Include a video (about 3 minutes) that demonstrates your submission. Videos must be uploaded to YouTube, Vimeo, or Facebook Video and made public.
-- [ ] Provide a URL to a publicly available version of the project that is fully functional as described for review and judging.
-- [ ] Confirm usage of Bolt.new to build the project and show the ‘Built with Bolt.new’ badge on your public project.
-- [ ] Provide the email used to build the project on Bolt.new. This email must be associated with the usage of Bolt.new to built the submitted project.
+  - TODO
+- [x] Provide a URL to a publicly available version of the project that is fully functional as described for review and judging.
+  - https://janusarc.com
+- [x] Confirm usage of Bolt.new to build the project and show the ‘Built with Bolt.new’ badge on your public project.
+- [x] Provide the email used to build the project on Bolt.new. This email must be associated with the usage of Bolt.new to built the submitted project.
+
+## To Do
+
+### MVP
+
+1. [x] add a favicon
+1. [x] improve the header size, so that the name "Janus Arc" is not cut off nor too close to the login/signup buttons
+1. [x] activate the logout/signout button, so it works correctly
+1. [x] fix the user recording playback display, which doesn't show the length of the audio correctly, but a `Infinity:NaN`
+1. [ ] add a slider for the audio, so the user can move around the audio track
+   - still not working
+1. [x] display what language the user is using for the transcription, allowing them to change it if needed
+1. [x] autodetect the user language and add it to the ElevenLabs API call (`language_code`, using 3 letters codes), so it improves the transcriptions
+1. [x] review and improve the landing page, focusing on above-the-fold content
+1. [x] reduce the gap between landing page sections
+1. [x] hide the bolt badge when the user logs in
+1. [x] Warn the user that updating the transcription will erase the previous one
+1. [x] Fix hover problem for the menu dropdown
+1. [x] Add bolt 'powered-by' as [required for the Hackathon](https://worldslargesthackathon.devpost.com/details/badgeguidelines)
+1. [x] Deploy to Netlify
+   - [x] Add a link to the deployed app in the README
+   - [x] Verify that everything is working correctly
+1. [ ] The favicon should be the same as the logo
+1. [x] Remove the "Profile Settings", keeping only "Settings"
+1. [x] Create the Settings and the Help and Support pages
+   - [x] The Settings page should allow the user to change their language, etc
+   - [x] The Help and Support page should provide information on how to use the app, FAQs, and contact information for support
+1. [ ] Seek still doesn't work. Perhaps would be better to use the default html element and style it with tailwind/css?
+1. [ ] Modernize the logo a bit more and use it as favicon
+1. [ ]
 
 ### If there's time
 
@@ -27,10 +50,14 @@ Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 
 ### Improvements for later
 
-- Features
-  - [ ] Add global search
-- Performance
-  - [ ] Add pagination to the log history
+Features
+
+1. [ ] Add global search
+1. [ ]
+
+Performance
+
+1. [ ] Add pagination to the log history
 
 ## App created from Vite template: React + TypeScript + Vite
 

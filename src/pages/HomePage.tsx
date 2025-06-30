@@ -44,21 +44,23 @@ export const HomePage: React.FC = () => {
       {/* Header */}
       <header className="relative z-10 border-b border-slate-700/50 bg-slate-800/20 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between gap-3 sm:gap-4 lg:gap-6">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
               <Logo size={32} className="text-blue-400 flex-shrink-0" />
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl font-bold text-white truncate">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white truncate">
                   Janus Arc
                 </h1>
-                <p className="text-slate-400 text-xs sm:text-sm">
+                <p className="text-slate-400 text-xs sm:text-sm lg:text-base hidden sm:block">
                   The AI Log for Startup Founders
                 </p>
               </div>
             </div>
 
             {/* User profile dropdown */}
-            <UserProfile />
+            <div className="flex-shrink-0">
+              <UserProfile />
+            </div>
           </div>
         </div>
       </header>

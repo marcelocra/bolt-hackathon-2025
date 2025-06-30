@@ -168,6 +168,16 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
     }
   };
 
+  const seekAudio = (progressPercentage: number) => {
+    if (playingAudio && playingAudio.audio.duration) {
+      const newTime = (progressPercentage / 100) * playingAudio.audio.duration;
+      playingAudio.audio.currentTime = newTime;
+      setPlayingAudio((prev) =>
+        prev ? { ...prev, progress: progressPercentage } : null
+      );
+    }
+  };
+
   const pauseAudio = () => {
     if (playingAudio) {
       playingAudio.audio.pause();
@@ -310,15 +320,24 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
   };
 
   const formatDuration = (seconds: number | null | undefined): string => {
-    if (!seconds) return "0:00";
+    if (!seconds || !isFinite(seconds) || isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const formatProgress = (currentTime: number): string => {
+    if (!currentTime || !isFinite(currentTime) || isNaN(currentTime))
+      return "0:00";
     const mins = Math.floor(currentTime / 60);
     const secs = Math.floor(currentTime % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const formatAudioDuration = (duration: number): string => {
+    if (!duration || !isFinite(duration) || isNaN(duration)) return "0:00";
+    const mins = Math.floor(duration / 60);
+    const secs = Math.floor(duration % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
@@ -541,20 +560,39 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
                     </div>
                   </div>
 
-                  {/* Audio progress bar */}
+                  {/* Audio progress bar with slider */}
                   {isPlaying && playingAudio && (
                     <div className="space-y-2">
-                      <div className="w-full bg-slate-700/50 rounded-full h-2">
+                      {/* Interactive progress bar */}
+                      <div className="relative w-full bg-slate-700/50 rounded-full h-2 cursor-pointer group">
                         <div
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-200"
+                          className="bg-blue-500 h-2 rounded-full transition-all duration-100 relative"
                           style={{ width: `${playingAudio.progress}%` }}
+                        >
+                          {/* Seek handle */}
+                          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing"></div>
+                        </div>
+                        {/* Invisible overlay for clicking anywhere on the bar */}
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={playingAudio.progress}
+                          onChange={(e) =>
+                            seekAudio(parseFloat(e.target.value))
+                          }
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          style={{ background: "transparent" }}
+                          title="Seek audio"
                         />
                       </div>
                       <div className="flex justify-between text-xs text-slate-400">
                         <span>
                           {formatProgress(playingAudio.audio.currentTime)}
                         </span>
-                        <span>{formatProgress(playingAudio.duration)}</span>
+                        <span>
+                          {formatAudioDuration(playingAudio.duration)}
+                        </span>
                       </div>
                     </div>
                   )}

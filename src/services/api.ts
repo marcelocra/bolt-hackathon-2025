@@ -15,10 +15,16 @@ export class ApiService {
   /**
    * Process audio - now only handles transcription, not audio enhancement
    */
-  static async processAudio(audioBlob: Blob): Promise<ProcessAudioResponse> {
+  static async processAudio(
+    audioBlob: Blob,
+    languageCode?: string
+  ): Promise<ProcessAudioResponse> {
     try {
       // Generate transcription only
-      const transcription = await ApiService.generateTranscription(audioBlob);
+      const transcription = await ApiService.generateTranscription(
+        audioBlob,
+        languageCode
+      );
 
       console.log(
         "Audio processing completed successfully (transcription only)"
@@ -45,9 +51,95 @@ export class ApiService {
   }
 
   /**
+   * Get supported languages for transcription
+   */
+  static getSupportedLanguages(): { code: string; name: string }[] {
+    return [
+      { code: "eng", name: "English" },
+      { code: "spa", name: "Spanish" },
+      { code: "fra", name: "French" },
+      { code: "deu", name: "German" },
+      { code: "ita", name: "Italian" },
+      { code: "por", name: "Portuguese" },
+      { code: "rus", name: "Russian" },
+      { code: "jpn", name: "Japanese" },
+      { code: "kor", name: "Korean" },
+      { code: "cmn", name: "Chinese (Mandarin)" },
+      { code: "ara", name: "Arabic" },
+      { code: "hin", name: "Hindi" },
+      { code: "nld", name: "Dutch" },
+      { code: "pol", name: "Polish" },
+      { code: "swe", name: "Swedish" },
+      { code: "dan", name: "Danish" },
+      { code: "nor", name: "Norwegian" },
+      { code: "fin", name: "Finnish" },
+      { code: "tur", name: "Turkish" },
+      { code: "ces", name: "Czech" },
+      { code: "hun", name: "Hungarian" },
+      { code: "ron", name: "Romanian" },
+      { code: "bul", name: "Bulgarian" },
+      { code: "hrv", name: "Croatian" },
+      { code: "slk", name: "Slovak" },
+      { code: "slv", name: "Slovenian" },
+    ];
+  }
+
+  /**
+   * Get language name from language code
+   */
+  static getLanguageName(code: string): string {
+    const languages = ApiService.getSupportedLanguages();
+    return languages.find((lang) => lang.code === code)?.name || "English";
+  }
+
+  /**
+   * Detect user's language based on browser locale
+   * Returns 3-letter language code for ElevenLabs API
+   */
+  static detectUserLanguage(): string {
+    const locale = navigator.language || navigator.languages?.[0] || "en-US";
+    const languageCode = locale.substring(0, 2).toLowerCase();
+
+    // Map common language codes to ElevenLabs 3-letter codes
+    const languageMap: { [key: string]: string } = {
+      en: "eng", // English
+      es: "spa", // Spanish
+      fr: "fra", // French
+      de: "deu", // German
+      it: "ita", // Italian
+      pt: "por", // Portuguese
+      ru: "rus", // Russian
+      ja: "jpn", // Japanese
+      ko: "kor", // Korean
+      zh: "cmn", // Chinese (Mandarin)
+      ar: "ara", // Arabic
+      hi: "hin", // Hindi
+      nl: "nld", // Dutch
+      pl: "pol", // Polish
+      sv: "swe", // Swedish
+      da: "dan", // Danish
+      no: "nor", // Norwegian
+      fi: "fin", // Finnish
+      tr: "tur", // Turkish
+      cs: "ces", // Czech
+      hu: "hun", // Hungarian
+      ro: "ron", // Romanian
+      bg: "bul", // Bulgarian
+      hr: "hrv", // Croatian
+      sk: "slk", // Slovak
+      sl: "slv", // Slovenian
+    };
+
+    return languageMap[languageCode] || "eng"; // Default to English
+  }
+
+  /**
    * Generate transcription from audio blob using ElevenLabs Speech-to-Text API
    */
-  static async generateTranscription(audioBlob: Blob): Promise<string> {
+  static async generateTranscription(
+    audioBlob: Blob,
+    languageCode?: string
+  ): Promise<string> {
     if (!ENABLE_ELEVENLABS) {
       // Placeholder implementation for development
       console.log(
@@ -86,9 +178,16 @@ export class ApiService {
       if (!client) {
         client = new ElevenLabsClient({ apiKey });
       }
+
+      // Use provided language code or detect user language
+      const detectedLanguageCode =
+        languageCode || ApiService.detectUserLanguage();
+      console.log(`Using language code: ${detectedLanguageCode}`);
+
       const response = await client.speechToText.convert({
         modelId: "scribe_v1",
         file: audioBlob,
+        languageCode: detectedLanguageCode,
       });
 
       const result = response.text;

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
-import { User, LogOut, Settings, HelpCircle, ChevronDown } from "lucide-react";
+import { LogOut, Settings, HelpCircle, ChevronDown } from "lucide-react";
 
 /**
  * User profile dropdown component with sign out and other profile actions
@@ -9,6 +10,7 @@ import { User, LogOut, Settings, HelpCircle, ChevronDown } from "lucide-react";
 
 export const UserProfile: React.FC = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -120,20 +122,7 @@ export const UserProfile: React.FC = () => {
             <button
               onClick={() => {
                 setIsOpen(false);
-                // TODO: Implement profile settings
-                console.log("Profile settings clicked");
-              }}
-              className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200 flex items-center space-x-3"
-            >
-              <User className="w-4 h-4" />
-              <span>Profile Settings</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                // TODO: Implement app settings
-                console.log("App settings clicked");
+                navigate("/settings");
               }}
               className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200 flex items-center space-x-3"
             >
@@ -144,8 +133,7 @@ export const UserProfile: React.FC = () => {
             <button
               onClick={() => {
                 setIsOpen(false);
-                // TODO: Implement help/support
-                console.log("Help clicked");
+                navigate("/help");
               }}
               className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors duration-200 flex items-center space-x-3"
             >
