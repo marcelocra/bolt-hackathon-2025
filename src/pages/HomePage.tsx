@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Recorder } from '../components/Recorder';
-import { HistoryList } from '../components/HistoryList';
-import { UserProfile } from '../components/UserProfile';
-import { Logo } from '../components/Logo';
+import React, { useState } from "react";
+import { Navigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
+import { Recorder } from "../components/Recorder";
+import { HistoryList } from "../components/HistoryList";
+import { UserProfile } from "../components/UserProfile";
+import { Logo } from "../components/Logo";
 
 /**
  * Home page component - main dashboard for voice journal
@@ -15,7 +15,7 @@ export const HomePage: React.FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
   const handleEntryCreated = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   if (loading) {
@@ -48,8 +48,12 @@ export const HomePage: React.FC = () => {
             <div className="flex items-center space-x-3">
               <Logo size={32} className="text-blue-400 flex-shrink-0" />
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl font-bold text-white truncate">Janus Arc</h1>
-                <p className="text-slate-400 text-xs sm:text-sm">The AI Log for Startup Founders</p>
+                <h1 className="text-lg sm:text-xl font-bold text-white truncate">
+                  Janus Arc
+                </h1>
+                <p className="text-slate-400 text-xs sm:text-sm">
+                  The AI Log for Startup Founders
+                </p>
               </div>
             </div>
 

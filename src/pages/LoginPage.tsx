@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Auth } from '../components/Auth';
-import { Logo } from '../components/Logo';
+import React, { useState } from "react";
+import { Navigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
+import { Auth } from "../components/Auth";
+import { Logo } from "../components/Logo";
 
 /**
  * Login page component with authentication form
@@ -10,7 +10,7 @@ import { Logo } from '../components/Logo';
 
 export const LoginPage: React.FC = () => {
   const { user, loading } = useAuth();
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
   if (loading) {
     return (
@@ -41,7 +41,9 @@ export const LoginPage: React.FC = () => {
             <Logo size={48} className="text-blue-400" />
             <div>
               <h1 className="text-3xl font-bold text-white">Janus Arc</h1>
-              <p className="text-slate-400 text-sm">The AI Log for Startup Founders</p>
+              <p className="text-slate-400 text-sm">
+                The AI Log for Startup Founders
+              </p>
             </div>
           </div>
         </div>

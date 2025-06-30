@@ -8,16 +8,4 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["lucide-react"],
   },
-  server: {
-    proxy: {
-      "/api/elevenlabs": {
-        target: "https://api.elevenlabs.io",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/elevenlabs/, ""),
-        headers: {
-          Origin: "https://api.elevenlabs.io",
-        },
-      },
-    },
-  },
 });
