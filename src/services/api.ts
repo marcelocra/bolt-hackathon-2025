@@ -89,7 +89,6 @@ export class ApiService {
       const response = await client.speechToText.convert({
         modelId: "scribe_v1",
         file: audioBlob,
-        languageCode: "por",
       });
 
       const result = response.text;
