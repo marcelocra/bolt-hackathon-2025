@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Mic, Square, Play, Pause, Loader2, Save } from 'lucide-react';
+import { Mic, Square, Play, Pause, Loader2, Save, AlertCircle } from 'lucide-react';
 import { ApiService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { AudioRecordingState } from '../types';
@@ -30,8 +30,24 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
 
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      // Check for microphone permissions first
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 44100
+        } 
+      });
+      
+      // Check if MediaRecorder is supported
+      if (!MediaRecorder.isTypeSupported('audio/webm')) {
+        throw new Error('Audio recording is not supported in this browser');
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm'
+      });
       
       chunksRef.current = [];
       mediaRecorderRef.current = mediaRecorder;
@@ -54,7 +70,17 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
         stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorder.start();
+      mediaRecorder.onerror = (event) => {
+        console.error('MediaRecorder error:', event);
+        setRecordingState(prev => ({
+          ...prev,
+          error: 'Recording failed. Please try again.',
+          isRecording: false,
+        }));
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start(1000); // Collect data every second
       
       // Start duration timer
       const startTime = Date.now();
@@ -72,9 +98,24 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
         error: null,
       }));
     } catch (error) {
+      console.error('Error starting recording:', error);
+      let errorMessage = 'Failed to access microphone.';
+      
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          errorMessage = 'Microphone access denied. Please allow microphone permissions and try again.';
+        } else if (error.name === 'NotFoundError') {
+          errorMessage = 'No microphone found. Please connect a microphone and try again.';
+        } else if (error.name === 'NotSupportedError') {
+          errorMessage = 'Audio recording is not supported in this browser.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       setRecordingState(prev => ({
         ...prev,
-        error: 'Failed to access microphone. Please check permissions.',
+        error: errorMessage,
       }));
     }
   }, []);
@@ -97,9 +138,28 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
       
       audioRef.current.onended = () => {
         setRecordingState(prev => ({ ...prev, isPlaying: false }));
+        URL.revokeObjectURL(audioUrl);
       };
       
-      audioRef.current.play();
+      audioRef.current.onerror = () => {
+        setRecordingState(prev => ({ 
+          ...prev, 
+          isPlaying: false,
+          error: 'Failed to play recording. Please try recording again.'
+        }));
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audioRef.current.play().catch(error => {
+        console.error('Error playing audio:', error);
+        setRecordingState(prev => ({ 
+          ...prev, 
+          isPlaying: false,
+          error: 'Failed to play recording. Please try recording again.'
+        }));
+        URL.revokeObjectURL(audioUrl);
+      });
+      
       setRecordingState(prev => ({ ...prev, isPlaying: true }));
     }
   }, [recordingState.audioBlob, recordingState.isPlaying]);
@@ -114,50 +174,36 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
   const saveRecording = useCallback(async () => {
     if (!recordingState.audioBlob || !user) return;
 
-    setRecordingState(prev => ({ ...prev, isLoading: true }));
+    setRecordingState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
+      // Validate audio blob
+      if (recordingState.audioBlob.size === 0) {
+        throw new Error('Recording is empty. Please try recording again.');
+      }
+
       // Upload original audio first
       const fileName = `recording_${Date.now()}.webm`;
       const originalAudioUrl = await ApiService.uploadAudio(recordingState.audioBlob, fileName, user.id);
       
       if (!originalAudioUrl) {
-        throw new Error('Failed to upload original audio file');
+        throw new Error('Failed to upload audio file. Please check your internet connection and try again.');
       }
 
-      // Process audio with ElevenLabs (or use placeholder if disabled)
-      console.log('Processing audio with AI...');
+      // Process audio for transcription
+      console.log('Processing audio for transcription...');
       const processResult = await ApiService.processAudio(recordingState.audioBlob);
       
-      let processedAudioUrl = originalAudioUrl; // Default to original
-      
-      if (processResult.success && processResult.processedAudioUrl) {
-        // If we got a processed audio blob URL, we need to upload it to storage
-        try {
-          const response = await fetch(processResult.processedAudioUrl);
-          const processedBlob = await response.blob();
-          
-          const processedFileName = `processed_${fileName.replace('.webm', '.mp3')}`;
-          const uploadedProcessedUrl = await ApiService.uploadProcessedAudio(processedBlob, processedFileName, user.id);
-          
-          if (uploadedProcessedUrl) {
-            processedAudioUrl = uploadedProcessedUrl;
-            console.log('Processed audio uploaded successfully');
-          }
-          
-          // Clean up the temporary blob URL
-          URL.revokeObjectURL(processResult.processedAudioUrl);
-        } catch (uploadError) {
-          console.warn('Failed to upload processed audio, using original:', uploadError);
-        }
-      }
+      // Generate a more descriptive title
+      const now = new Date();
+      const title = `Founder Log - ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
       // Save entry to database
       const entry = await ApiService.saveEntry({
         user_id: user.id,
-        title: `Recording ${new Date().toLocaleDateString()}`,
+        title,
         original_audio_url: originalAudioUrl,
-        processed_audio_url: processedAudioUrl,
+        processed_audio_url: originalAudioUrl, // Use original URL since we're not processing audio anymore
         transcription: processResult.transcription || null,
         duration: recordingState.duration,
       });
@@ -177,14 +223,14 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
         
         onEntryCreated?.();
       } else {
-        throw new Error('Failed to save recording to database');
+        throw new Error('Failed to save recording to database. Please try again.');
       }
     } catch (error) {
       console.error('Error saving recording:', error);
       setRecordingState(prev => ({
         ...prev,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to save recording',
+        error: error instanceof Error ? error.message : 'Failed to save recording. Please try again.',
       }));
     }
   }, [recordingState.audioBlob, recordingState.duration, user, onEntryCreated]);
@@ -200,6 +246,11 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
       audioRef.current.pause();
     }
     
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    
     setRecordingState({
       isRecording: false,
       isLoading: false,
@@ -210,12 +261,24 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
     });
   }, []);
 
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
+
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-slate-700/50">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-white mb-2">Voice Journal</h2>
-          <p className="text-slate-400">Record your thoughts and memories</p>
+          <h2 className="text-2xl font-bold text-white mb-2">AI Founder Log</h2>
+          <p className="text-slate-400">Capture your startup insights and decisions</p>
         </div>
 
         {/* Recording Controls */}
@@ -226,7 +289,7 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
               <button
                 onClick={recordingState.isRecording ? stopRecording : startRecording}
                 disabled={recordingState.isLoading}
-                className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
+                className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
                   recordingState.isRecording
                     ? 'bg-red-500 hover:bg-red-600 animate-pulse shadow-red-500/25'
                     : 'bg-blue-500 hover:bg-blue-600 shadow-blue-500/25'
@@ -244,7 +307,7 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
                   {formatDuration(recordingState.duration)}
                 </p>
                 <p className="text-slate-400 text-sm">
-                  {recordingState.isRecording ? 'Recording...' : 'Tap to start recording'}
+                  {recordingState.isRecording ? 'Recording... Tap to stop' : 'Tap to start recording'}
                 </p>
               </div>
             </div>
@@ -291,7 +354,7 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
                   {recordingState.isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Processing...</span>
+                      <span>Saving...</span>
                     </>
                   ) : (
                     <>
@@ -307,8 +370,28 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
 
         {/* Error Message */}
         {recordingState.error && (
-          <div className="mt-6 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-            <p className="text-red-400 text-sm text-center">{recordingState.error}</p>
+          <div className="mt-6 bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-red-400 text-sm font-medium mb-1">Recording Error</p>
+                <p className="text-red-300 text-sm">{recordingState.error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Recording tips */}
+        {!recordingState.isRecording && !recordingState.audioBlob && !recordingState.error && (
+          <div className="mt-6 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+            <div className="text-center">
+              <p className="text-blue-400 text-sm font-medium mb-2">Founder Tips</p>
+              <ul className="text-blue-300 text-xs space-y-1">
+                <li>• Record key decisions and their reasoning</li>
+                <li>• Capture market insights and customer feedback</li>
+                <li>• Document lessons learned and pivots</li>
+              </ul>
+            </div>
           </div>
         )}
       </div>

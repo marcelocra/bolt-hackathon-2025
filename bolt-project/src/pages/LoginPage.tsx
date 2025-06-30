@@ -41,7 +41,7 @@ export const LoginPage: React.FC = () => {
             <Logo size={48} className="text-blue-400" />
             <div>
               <h1 className="text-3xl font-bold text-white">Janus Arc</h1>
-              <p className="text-slate-400 text-sm">Your Personal Voice Journal</p>
+              <p className="text-slate-400 text-sm">The AI Log for Startup Founders</p>
             </div>
           </div>
         </div>
@@ -52,7 +52,7 @@ export const LoginPage: React.FC = () => {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-slate-500 text-xs">
-            Secure • Private • AI-Enhanced
+            AI-Powered • Secure • Founder-Focused
           </p>
         </div>
       </div>

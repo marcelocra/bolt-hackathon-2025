@@ -44,12 +44,12 @@ export const Auth: React.FC<AuthProps> = ({ mode = 'signin', onModeChange }) => 
             <User className="w-8 h-8 text-blue-400" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">
-            {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
+            {mode === 'signin' ? 'Welcome Back' : 'Join Janus Arc'}
           </h2>
           <p className="text-slate-400">
             {mode === 'signin' 
-              ? 'Sign in to access your voice journal' 
-              : 'Start your personal voice journal journey'
+              ? 'Access your AI-powered founder log' 
+              : 'Start your AI-enhanced founder journey'
             }
           </p>
         </div>

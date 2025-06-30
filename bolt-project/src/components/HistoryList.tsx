@@ -270,8 +270,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
             <div className="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No entries yet</h3>
-            <p className="text-slate-400">Start recording your first voice journal entry!</p>
+            <h3 className="text-xl font-semibold text-white mb-2">No founder logs yet</h3>
+            <p className="text-slate-400">Start recording your first startup insight!</p>
           </div>
         </div>
       </div>
@@ -282,7 +282,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
     <div className="w-full max-w-4xl mx-auto">
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden">
         <div className="p-4 sm:p-6 border-b border-slate-700/50">
-          <h2 className="text-xl font-bold text-white">Your Voice Journal</h2>
+          <h2 className="text-xl font-bold text-white">Your Founder Log</h2>
           <p className="text-slate-400 text-sm mt-1">
             {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
           </p>

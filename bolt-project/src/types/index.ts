@@ -43,3 +43,24 @@ export interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
+
+// Additional utility types for better type safety
+export type EntryInsert = Omit<Entry, 'id' | 'created_at' | 'updated_at'>;
+export type EntryUpdate = Partial<Omit<Entry, 'id' | 'user_id' | 'created_at'>>;
+
+// API response types
+export interface ApiResponse<T = any> {
+  data?: T;
+  error?: string;
+  success: boolean;
+}
+
+// Audio processing status
+export type ProcessingStatus = 'idle' | 'processing' | 'completed' | 'failed';
+
+// Transcription service types
+export interface TranscriptionOptions {
+  language?: string;
+  model?: string;
+  temperature?: number;
+}

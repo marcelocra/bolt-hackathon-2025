@@ -49,7 +49,7 @@ export const HomePage: React.FC = () => {
               <Logo size={32} className="text-blue-400 flex-shrink-0" />
               <div className="min-w-0">
                 <h1 className="text-lg sm:text-xl font-bold text-white truncate">Janus Arc</h1>
-                <p className="text-slate-400 text-xs sm:text-sm">Voice Journal</p>
+                <p className="text-slate-400 text-xs sm:text-sm">The AI Log for Startup Founders</p>
               </div>
             </div>
 
@@ -79,7 +79,7 @@ export const HomePage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
           <div className="text-center">
             <p className="text-slate-500 text-xs sm:text-sm">
-              © 2025 Janus Arc. Secure voice journaling with AI enhancement.
+              © 2025 Janus Arc. The AI-powered voice log for startup founders.
             </p>
           </div>
         </div>
