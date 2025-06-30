@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import boltLogo from "./assets/bolt-powered-by_white_circle_360x360.png";
+import { LandingPage } from "./pages/LandingPage";
 
 /**
  * Main application component with routing and authentication context
@@ -28,7 +29,8 @@ function App() {
           </a>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<HomePage />} />
+            <Route path="/app" element={<HomePage />} />
+            <Route path="/" element={<LandingPage />} />
           </Routes>
         </div>
       </Router>
