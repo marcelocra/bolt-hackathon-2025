@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause } from "lucide-react";
-import { Button, Slider } from "./ui";
+import Button from "./ui/Button";
+import Slider from "./ui/Slider";
 
 export default function AudioPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
