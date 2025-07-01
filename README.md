@@ -33,17 +33,17 @@ Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 1. [x] Deploy to Netlify
    - [x] Add a link to the deployed app in the README
    - [x] Verify that everything is working correctly
-1. [ ] The favicon should be the same as the logo
+1. [x] The favicon should be the same as the logo
 1. [x] Remove the "Profile Settings", keeping only "Settings"
 1. [x] Create the Settings and the Help and Support pages
    - [x] The Settings page should allow the user to change their language, etc
    - [x] The Help and Support page should provide information on how to use the app, FAQs, and contact information for support
-1. [ ] Seek still doesn't work. ~~Perhaps would be better to use the default html element and style it with tailwind/css?~~ No, the default is really ugly and has nothing to do with the app.
+1. [ ] Seek still doesn't work.
 1. [x] Modernize the logo without change its idea and use it as favicon
 1. [ ] Fix the links in the menu dropdown: clicking on them doesn't take us anywhere. The pages work if we go directly to them, but not from the links.
 1. [x] Do not display the language selector before the user records an audio. The selection should appear after the audio is recorded, near the save button, with the user's default/chosen language pre-selected
-1. [ ] Add robots.txt, sitemap.xml and a meta description to the app, so it can be indexed by search engines
-1. [ ] Remove the "View transcription" button from the audio playback, as it is not needed
+1. [x] Add robots.txt, sitemap.xml and a meta description to the app, so it can be indexed by search engines
+1. [x] Remove the "View transcription" button from the audio playback, as it is not needed
 
 ### If there's time
 

@@ -14,15 +14,13 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/app" element={<HomePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/" element={<LandingPage />} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/app" element={<HomePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/help" element={<HelpPage />} />
+          <Route path="/" element={<LandingPage />} />
+        </Routes>
       </Router>
     </AuthProvider>
   );

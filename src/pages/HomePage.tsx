@@ -40,7 +40,6 @@ export const HomePage: React.FC = () => {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl"></div>
       </div>
-
       {/* Header */}
       <header className="relative z-10 border-b border-slate-700/50 bg-slate-800/20 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
@@ -64,7 +63,6 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
       </header>
-
       {/* Main content */}
       <main className="relative z-10 max-w-6xl mx-auto px-4 py-6 sm:py-8">
         <div className="space-y-6 sm:space-y-8">
@@ -79,7 +77,6 @@ export const HomePage: React.FC = () => {
           </section>
         </div>
       </main>
-
       {/* Footer */}
       <footer className="relative z-10 border-t border-slate-700/50 bg-slate-800/20 backdrop-blur-sm mt-12 sm:mt-16">
         <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">

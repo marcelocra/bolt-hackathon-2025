@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /settings
+Disallow: /help
+Disallow: /login
+
+Sitemap: https://janusarc.com/sitemap.xml
