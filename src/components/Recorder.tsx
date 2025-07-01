@@ -426,7 +426,7 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
                     isDeleting ? "bg-red-500 animate-pulse" : ""
                   }`}
                 >
-                  {isDeleting ? "Deleting..." : "Re-record"}
+                  {isDeleting ? "Deleting..." : "Discard"}
                 </button>
 
                 <button
