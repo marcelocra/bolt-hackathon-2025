@@ -328,32 +328,6 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
           </p>
         </div>
 
-        {/* Language Selection */}
-        <div className="mb-6 flex justify-center">
-          <div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600/50">
-            <div className="flex items-center space-x-3">
-              <Globe className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-300 text-sm font-medium">
-                Language:
-              </span>
-              <select
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-                className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={
-                  recordingState.isRecording || recordingState.isLoading
-                }
-              >
-                {ApiService.getSupportedLanguages().map((lang) => (
-                  <option key={lang.code} value={lang.code}>
-                    {lang.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
         {/* Recording Controls */}
         <div className="flex flex-col items-center space-y-6">
           {!recordingState.audioBlob ? (
@@ -419,6 +393,28 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
                   <p className="text-slate-400 text-sm">
                     {recordingState.isPlaying ? "Playing..." : "Ready to save"}
                   </p>
+                </div>
+              </div>
+
+              {/* Language Selection - only shown after recording */}
+              <div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600/50">
+                <div className="flex items-center space-x-3">
+                  <Globe className="w-4 h-4 text-slate-400" />
+                  <span className="text-slate-300 text-sm font-medium">
+                    Transcription Language:
+                  </span>
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={recordingState.isLoading || isDeleting}
+                  >
+                    {ApiService.getSupportedLanguages().map((lang) => (
+                      <option key={lang.code} value={lang.code}>
+                        {lang.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

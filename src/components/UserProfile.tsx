@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
-import { useAuth } from "../context/AuthContext";
 import { LogOut, Settings, HelpCircle, ChevronDown } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * User profile dropdown component with sign out and other profile actions

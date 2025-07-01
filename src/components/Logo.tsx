@@ -15,52 +15,51 @@ export const Logo: React.FC<LogoProps> = ({ className = "", size = 32 }) => {
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`transition-all duration-300 ${className}`}
     >
-      {/* Left arc representing one perspective */}
-      <path
-        d="M4 16C4 9.373 9.373 4 16 4C18.387 4 20.676 4.842 22.485 6.343"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        className="text-blue-400"
-      />
-
-      {/* Right arc representing another perspective */}
-      <path
-        d="M28 16C28 22.627 22.627 28 16 28C13.613 28 11.324 27.158 9.515 25.657"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        className="text-blue-400"
-      />
-
-      {/* Central connecting elements */}
-      <circle
-        cx="16"
-        cy="10"
-        r="1.5"
-        fill="currentColor"
-        className="text-blue-500"
-      />
-      <circle
-        cx="16"
-        cy="22"
-        r="1.5"
-        fill="currentColor"
-        className="text-blue-500"
-      />
-
-      {/* Subtle gradient overlay */}
       <defs>
-        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.6" />
+        <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#818cf8" />
+          <stop offset="100%" stopColor="#3b82f6" />
         </linearGradient>
+        <filter id="logo-shadow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur" />
+          <feOffset in="blur" dx="2" dy="2" result="offsetBlur" />
+          <feFlood floodColor="#2563eb" floodOpacity="0.5" result="offsetColor" />
+          <feComposite
+            in="offsetColor"
+            in2="offsetBlur"
+            operator="in"
+            result="offsetBlurColor"
+          />
+          <feMerge>
+            <feMergeNode in="offsetBlurColor" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
+      <g filter="url(#logo-shadow)">
+        <path
+          d="M50 10 C 20 20, 20 80, 50 90 S 80 80, 80 50 C 80 20, 50 10, 50 10 Z"
+          stroke="url(#logo-gradient)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          transform="rotate(45 50 50)"
+        />
+        <path
+          d="M50 10 C 80 20, 80 80, 50 90 S 20 80, 20 50 C 20 20, 50 10, 50 10 Z"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeOpacity="0.3"
+          transform="rotate(45 50 50)"
+        />
+      </g>
     </svg>
   );
 };

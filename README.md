@@ -21,8 +21,7 @@ Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 1. [x] improve the header size, so that the name "Janus Arc" is not cut off nor too close to the login/signup buttons
 1. [x] activate the logout/signout button, so it works correctly
 1. [x] fix the user recording playback display, which doesn't show the length of the audio correctly, but a `Infinity:NaN`
-1. [ ] add a slider for the audio, so the user can move around the audio track
-   - still not working
+1. [x] add a slider for the audio, so the user can move around the audio track
 1. [x] display what language the user is using for the transcription, allowing them to change it if needed
 1. [x] autodetect the user language and add it to the ElevenLabs API call (`language_code`, using 3 letters codes), so it improves the transcriptions
 1. [x] review and improve the landing page, focusing on above-the-fold content
@@ -39,9 +38,12 @@ Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 1. [x] Create the Settings and the Help and Support pages
    - [x] The Settings page should allow the user to change their language, etc
    - [x] The Help and Support page should provide information on how to use the app, FAQs, and contact information for support
-1. [ ] Seek still doesn't work. Perhaps would be better to use the default html element and style it with tailwind/css?
-1. [ ] Modernize the logo a bit more and use it as favicon
-1. [ ]
+1. [ ] Seek still doesn't work. ~~Perhaps would be better to use the default html element and style it with tailwind/css?~~ No, the default is really ugly and has nothing to do with the app.
+1. [x] Modernize the logo without change its idea and use it as favicon
+1. [ ] Fix the links in the menu dropdown: clicking on them doesn't take us anywhere. The pages work if we go directly to them, but not from the links.
+1. [x] Do not display the language selector before the user records an audio. The selection should appear after the audio is recorded, near the save button, with the user's default/chosen language pre-selected
+1. [ ] Add robots.txt, sitemap.xml and a meta description to the app, so it can be indexed by search engines
+1. [ ] Remove the "View transcription" button from the audio playback, as it is not needed
 
 ### If there's time
 
