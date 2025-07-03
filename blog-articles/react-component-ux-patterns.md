@@ -8,7 +8,6 @@ After fixing our audio duration issue, we discovered a confusing user experience
 // Problem: Two competing play buttons
 <HistoryList>
   <button onClick={playAudio}>▶️</button> {/* Button 1: Show player */}
-  
   {isPlaying && (
     <AudioPlayer>
       <button onClick={togglePlay}>▶️⏸️</button> {/* Button 2: Control audio */}
@@ -27,7 +26,7 @@ The real question: **Who should control audio playback?**
 // Option 1: HistoryList controls everything
 const HistoryList = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  
+
   return (
     <button onClick={() => setIsPlaying(!isPlaying)}>
       {isPlaying ? "⏸️" : "▶️"}
@@ -38,12 +37,8 @@ const HistoryList = () => {
 // Option 2: AudioPlayer controls playback (better)
 const AudioPlayer = ({ src, autoPlay }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  
-  return (
-    <button onClick={togglePlayPause}>
-      {isPlaying ? "⏸️" : "▶️"}
-    </button>
-  );
+
+  return <button onClick={togglePlayPause}>{isPlaying ? "⏸️" : "▶️"}</button>;
 };
 ```
 
@@ -53,14 +48,14 @@ const AudioPlayer = ({ src, autoPlay }) => {
 
 ```tsx
 // HistoryList: "Show/Hide Player" responsibility
-<button 
+<button
   onClick={() => isPlaying ? pauseAudio() : playAudio(entry)}
   className={isPlaying ? "bg-green-500" : "bg-blue-500"}
 >
   ▶️ {/* Always play icon - means "show player" */}
 </button>
 
-// AudioPlayer: "Control Playback" responsibility  
+// AudioPlayer: "Control Playback" responsibility
 <button onClick={togglePlayPause}>
   {isPlaying ? "⏸️" : "▶️"} {/* Dynamic - actual playback state */}
 </button>
@@ -73,7 +68,7 @@ Clear visual distinction eliminates confusion:
 ```tsx
 // HistoryList button: Static "Show Player" action
 className={`${
-  isPlaying 
+  isPlaying
     ? "bg-green-500 hover:bg-green-600" // 🟢 Active state
     : "bg-blue-500 hover:bg-blue-600"   // 🔵 Default state
 }`}
@@ -111,10 +106,10 @@ useEffect(() => {
 
   const handlePlay = () => setIsPlaying(true);
   const handlePause = () => setIsPlaying(false);
-  
+
   audio.addEventListener("play", handlePlay);
   audio.addEventListener("pause", handlePause);
-  
+
   return () => {
     audio.removeEventListener("play", handlePlay);
     audio.removeEventListener("pause", handlePause);
@@ -136,7 +131,7 @@ useEffect(() => {
 // Before: Confusing dual controls
 User clicks HistoryList button → Player appears with another button → Confusion
 
-// After: Clear interaction flow  
+// After: Clear interaction flow
 User clicks HistoryList button → Audio starts playing immediately → Player shows pause control
 ```
 
