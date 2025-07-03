@@ -1,17 +1,4 @@
-# bolt-hackathon-2025
-
-Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
-
-## Hackathon Submission
-
-[**What to Submit**](https://worldslargesthackathon.devpost.com/#:~:text=for%20more%20details.-,What%20to%20Submit,-Include%20a%20video):
-
-- [ ] Include a video (about 3 minutes) that demonstrates your submission. Videos must be uploaded to YouTube, Vimeo, or Facebook Video and made public.
-  - TODO
-- [x] Provide a URL to a publicly available version of the project that is fully functional as described for review and judging.
-  - https://janusarc.com
-- [x] Confirm usage of Bolt.new to build the project and show the ‘Built with Bolt.new’ badge on your public project.
-- [x] Provide the email used to build the project on Bolt.new. This email must be associated with the usage of Bolt.new to built the submitted project.
+# Janus Arc: The AI Log for Startup Founders
 
 ## To Do
 
