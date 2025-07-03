@@ -44,21 +44,25 @@ Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 1. [x] Do not display the language selector before the user records an audio. The selection should appear after the audio is recorded, near the save button, with the user's default/chosen language pre-selected
 1. [x] Add robots.txt, sitemap.xml and a meta description to the app, so it can be indexed by search engines
 1. [x] Remove the "View transcription" button from the audio playback, as it is not needed
+1. [ ] Fix settings page:
+   - [ ] Should have a link back to the previous page.
+   - [ ] Should persist the user settings at least locally. If global state management is neecessary, use Zustand.
+   - [ ] User language setting should be used when requesting the transcription from ElevenLabs, with fallback.
+1. [ ] Fix audio player: it still shows a second play button after the first one in the HistoryList item is clicked. Also, the HistoryList item shows exactly the same information that the audio player, aside from the audio duration, the transcript and the menu with actions. We need to:
+   - [ ] Rename the HistoryList component to AudioLogs.
+   - [ ] Create the AudioLog component, merging the HistoryList item with the AudioPlayer. That way we have a single component responsible for all audio-related functionality, including playback, transcription, and actions.
+1. [ ] Improve the Recorder component. Right now, it takes most of the screen height on mobile devices. Find a better design for the component, perhaps moving some of the text ("Founders Tips") to the faq or a later onboarding screen.
+1. [ ] Add light mode support, consistent with the current dark mode. Add a toggle at the dropdown menu to switch between light and dark modes.
+1. [ ] Add search functionality, placing an input search field above the Recorder component. When the user starts typing, only display audio logs with transcriptions that match the search query (semantically).
 
-### If there's time
+### Next Steps
 
-- [ ] Make it a PWA
-- [ ] Add Todoist integration
-
-### Improvements for later
-
-Features
-
-1. [ ] Add global search
-
-Performance
-
+1. [ ] Make it a PWA
 1. [ ] Add pagination to the log history
+
+### Ideas for later discussions (do not implement yet)
+
+1. [ ] Add Todoist integration
 
 ## App created from Vite template: React + TypeScript + Vite
 
