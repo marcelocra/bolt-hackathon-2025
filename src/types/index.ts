@@ -49,7 +49,7 @@ export type EntryInsert = Omit<Entry, "id" | "created_at" | "updated_at">;
 export type EntryUpdate = Partial<Omit<Entry, "id" | "user_id" | "created_at">>;
 
 // API response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   success: boolean;

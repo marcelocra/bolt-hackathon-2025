@@ -26,12 +26,21 @@ export const UserProfile: React.FC = () => {
   // Close dropdown when clicking outside or pressing escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
+      const target = event.target as Node;
+      
+      // Don't close if clicking on the button itself
+      if (buttonRef.current && buttonRef.current.contains(target)) {
+        return;
       }
+      
+      // Don't close if clicking inside the dropdown menu
+      const dropdownElement = document.querySelector('[data-dropdown-menu]');
+      if (dropdownElement && dropdownElement.contains(target)) {
+        return;
+      }
+      
+      // Close dropdown if clicking anywhere else
+      setIsOpen(false);
     };
 
     const handleEscape = (event: KeyboardEvent) => {
@@ -98,6 +107,7 @@ export const UserProfile: React.FC = () => {
   const dropdownContent =
     isOpen && buttonRect ? (
       <div
+        data-dropdown-menu
         className="bg-slate-800 border border-slate-700/50 rounded-lg shadow-2xl min-w-56 max-w-[calc(100vw-2rem)] sm:max-w-none"
         style={getDropdownStyle()}
       >

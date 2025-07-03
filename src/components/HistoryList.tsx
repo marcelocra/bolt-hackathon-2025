@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Play,
-  Pause,
   Trash2,
   Calendar,
   Clock,
@@ -16,6 +15,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../services/supabaseClient";
 import { ConfirmationModal } from "./ConfirmationModal";
 import type { Entry } from "../types";
+import AudioPlayer from "./AudioPlayer";
 
 /**
  * History list component displaying user's voice journal entries
@@ -29,13 +29,6 @@ interface ExpandedTranscripts {
   [key: string]: boolean;
 }
 
-interface PlayingAudio {
-  id: string;
-  audio: HTMLAudioElement;
-  progress: number;
-  duration: number;
-}
-
 interface OpenMenus {
   [key: string]: boolean;
 }
@@ -44,7 +37,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
   const { user } = useAuth();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [playingAudio, setPlayingAudio] = useState<PlayingAudio | null>(null);
+  const [playingEntryId, setPlayingEntryId] = useState<string | null>(null);
+  const [playingEntryUrl, setPlayingEntryUrl] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expandedTranscripts, setExpandedTranscripts] =
     useState<ExpandedTranscripts>({});
@@ -74,122 +68,46 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
     fetchEntries();
   }, [fetchEntries, refreshTrigger]);
 
-  const updateProgress = React.useCallback(() => {
-    if (playingAudio) {
-      const progress =
-        (playingAudio.audio.currentTime / playingAudio.audio.duration) * 100;
-      setPlayingAudio((prev) => (prev ? { ...prev, progress } : null));
-    }
-  }, [playingAudio]);
-
-  const seekAudio = (progressPercentage: number) => {
-    if (playingAudio && playingAudio.audio.duration) {
-      const newTime = (progressPercentage / 100) * playingAudio.audio.duration;
-      playingAudio.audio.currentTime = newTime;
-      setPlayingAudio((prev) =>
-        prev ? { ...prev, progress: progressPercentage } : null
-      );
-    }
-  };
-
-  const handleAudioEnded = React.useCallback(() => {
-    setPlayingAudio(null);
-  }, []);
-
-  // Cleanup audio when component unmounts
-  useEffect(() => {
-    return () => {
-      if (playingAudio) {
-        playingAudio.audio.pause();
-        playingAudio.audio.removeEventListener("timeupdate", updateProgress);
-        playingAudio.audio.removeEventListener("ended", handleAudioEnded);
-      }
-    };
-  }, [playingAudio, updateProgress, handleAudioEnded]);
-
-  // Close menus when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setOpenMenus({});
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
-
   const playAudio = async (entry: Entry) => {
-    // Stop current audio if playing
-    if (playingAudio) {
-      playingAudio.audio.pause();
-      playingAudio.audio.removeEventListener("timeupdate", updateProgress);
-      playingAudio.audio.removeEventListener("ended", handleAudioEnded);
-    }
-
-    // Prioritize processed audio URL for better browser compatibility, fallback to original
     const audioPath = entry.processed_audio_url || entry.original_audio_url;
     if (!audioPath) {
       console.error("No audio path available for playback");
       return;
     }
-
     try {
-      // Create a signed URL for the private audio file (valid for 1 hour)
+      console.log("Creating signed URL for path:", audioPath);
       const { data, error } = await supabase.storage
         .from("audio-recordings")
         .createSignedUrl(audioPath, 3600);
-
-      if (error) {
-        throw new Error(`Failed to create signed URL: ${error.message}`);
+      if (error || !data?.signedUrl) {
+        throw new Error(error?.message || "Failed to create signed URL");
       }
-
-      if (!data?.signedUrl) {
-        throw new Error("No signed URL returned");
+      console.log("Signed URL created successfully:", data.signedUrl);
+      
+      // Test if the URL is accessible by making a HEAD request
+      try {
+        const response = await fetch(data.signedUrl, { method: 'HEAD' });
+        console.log("URL accessibility test:", {
+          status: response.status,
+          contentType: response.headers.get('content-type'),
+          contentLength: response.headers.get('content-length')
+        });
+      } catch (fetchError) {
+        console.warn("Could not test URL accessibility:", fetchError);
       }
-
-      const audio = new Audio(data.signedUrl);
-
-      audio.addEventListener("loadedmetadata", () => {
-        setPlayingAudio({
-          id: entry.id,
-          audio,
-          progress: 0,
-          duration: audio.duration,
-        });
-
-        // Play the audio after metadata is loaded
-        audio.play().catch((error) => {
-          console.error("Error playing audio:", error);
-          setPlayingAudio(null);
-        });
-      });
-
-      audio.addEventListener("timeupdate", updateProgress);
-      audio.addEventListener("ended", handleAudioEnded);
-
-      // Handle loading errors
-      audio.addEventListener("error", (error) => {
-        console.error("Error loading audio:", error);
-        setPlayingAudio(null);
-      });
-    } catch (error) {
-      console.error("Error creating signed URL or playing audio:", error);
-      setPlayingAudio(null);
+      
+      setPlayingEntryId(entry.id);
+      setPlayingEntryUrl(data.signedUrl);
+    } catch (err) {
+      setPlayingEntryId(null);
+      setPlayingEntryUrl(null);
+      console.error("Error creating signed URL for playback:", err);
     }
   };
 
   const pauseAudio = () => {
-    if (playingAudio) {
-      playingAudio.audio.pause();
-      setPlayingAudio(null);
-    }
-  };
-
-  const toggleMenu = (entryId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setOpenMenus((prev) => ({
-      ...prev,
-      [entryId]: !prev[entryId],
-    }));
+    setPlayingEntryId(null);
+    setPlayingEntryUrl(null);
   };
 
   const confirmDelete = (entryId: string) => {
@@ -228,9 +146,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
           setTimeout(() => {
             setEntries((prev) => prev.filter((entry) => entry.id !== entryId));
             // Stop audio if the deleted entry was playing
-            if (playingAudio && playingAudio.id === entryId) {
-              playingAudio.audio.pause();
-              setPlayingAudio(null);
+            if (playingEntryId === entryId) {
+              setPlayingEntryId(null);
             }
             setDeletingId(null);
           }, 300); // Match animation duration
@@ -325,19 +242,6 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const formatProgress = (seconds: number): string => {
-    if (!isFinite(seconds) || isNaN(seconds)) return "0:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const formatAudioDuration = (duration: number): string => {
-    if (!isFinite(duration) || isNaN(duration)) return "0:00";
-    const mins = Math.floor(duration / 60);
-    const secs = Math.floor(duration % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
 
   const truncateText = (
     text: string,
@@ -355,6 +259,14 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
       truncated: words.slice(0, maxWords).join(" ") + "...",
       needsExpansion: true,
     };
+  };
+
+  const toggleMenu = (entryId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setOpenMenus((prev) => ({
+      ...prev,
+      [entryId]: !prev[entryId],
+    }));
   };
 
   if (loading) {
@@ -400,7 +312,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
 
         <div className="divide-y divide-slate-700/30">
           {entries.map((entry, index) => {
-            const isPlaying = playingAudio?.id === entry.id;
+            const isPlaying = playingEntryId === entry.id;
             const isExpanded = expandedTranscripts[entry.id];
             const transcriptData = entry.transcription
               ? truncateText(entry.transcription)
@@ -429,7 +341,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
                   {/* Header with title, play button, and actions */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                      {/* Play/Pause button */}
+                      {/* Show/Hide Player button */}
                       <button
                         onClick={() =>
                           isPlaying ? pauseAudio() : playAudio(entry)
@@ -442,14 +354,12 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
                         className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg flex-shrink-0 mt-1 ${
                           isDeleting
                             ? "bg-red-500/50 cursor-not-allowed"
+                            : isPlaying
+                            ? "bg-green-500 hover:bg-green-600 hover:shadow-green-500/25"
                             : "bg-blue-500 hover:bg-blue-600 disabled:bg-slate-600 disabled:cursor-not-allowed hover:shadow-blue-500/25"
                         }`}
                       >
-                        {isPlaying ? (
-                          <Pause className="w-4 h-4 text-white" />
-                        ) : (
-                          <Play className="w-4 h-4 text-white ml-0.5" />
-                        )}
+                        <Play className="w-4 h-4 text-white ml-0.5" />
                       </button>
 
                       {/* Title and metadata */}
@@ -543,41 +453,15 @@ export const HistoryList: React.FC<HistoryListProps> = ({ refreshTrigger }) => {
                     </div>
                   </div>
 
-                  {/* Audio progress bar with slider */}
-                  {isPlaying && playingAudio && (
-                    <div className="space-y-2">
-                      {/* Interactive progress bar */}
-                      <div className="relative w-full bg-slate-700/50 rounded-full h-2 cursor-pointer group">
-                        <div
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-100 relative"
-                          style={{ width: `${playingAudio.progress}%` }}
-                        >
-                          {/* Seek handle */}
-                          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing"></div>
-                        </div>
-                        {/* Invisible overlay for clicking anywhere on the bar */}
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={playingAudio.progress}
-                          onChange={(e) =>
-                            seekAudio(parseFloat(e.target.value))
-                          }
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          style={{ background: "transparent" }}
-                          title="Seek audio"
-                        />
-                      </div>
-                      <div className="flex justify-between text-xs text-slate-400">
-                        <span>
-                          {formatProgress(playingAudio.audio.currentTime)}
-                        </span>
-                        <span>
-                          {formatAudioDuration(playingAudio.duration)}
-                        </span>
-                      </div>
-                    </div>
+                  {/* AudioPlayer for the currently playing entry */}
+                  {isPlaying && playingEntryUrl && (
+                    <AudioPlayer
+                      src={playingEntryUrl}
+                      title={entry.title}
+                      subtitle={formatDate(entry.created_at)}
+                      duration={entry.duration}
+                      onEnded={pauseAudio}
+                    />
                   )}
 
                   {/* Transcript section */}

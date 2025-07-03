@@ -38,9 +38,9 @@ Code for Bolt's 2025 hackathon, aka World's Largest Hackathon.
 1. [x] Create the Settings and the Help and Support pages
    - [x] The Settings page should allow the user to change their language, etc
    - [x] The Help and Support page should provide information on how to use the app, FAQs, and contact information for support
-1. [ ] Fix audio player to work correctly. We have an AudioPlayer component, but it is not integrated with HistoryList and when we tried to integrate, the seek functionality wouldn't work and the slider wouldn't show the correct length of the audio.
+1. [x] Fix audio player to work correctly. We have an AudioPlayer component, but it is not integrated with HistoryList and when we tried to integrate, the seek functionality wouldn't work and the slider wouldn't show the correct length of the audio.
 1. [x] Modernize the logo without change its idea and use it as favicon
-1. [ ] Fix the links in the menu dropdown: clicking on them doesn't take us anywhere. The pages work if we go directly to them, but not from the links.
+1. [x] Fix the links in the menu dropdown: clicking on them doesn't take us anywhere. The pages work if we go directly to them, but not from the links.
 1. [x] Do not display the language selector before the user records an audio. The selection should appear after the audio is recorded, near the save button, with the user's default/chosen language pre-selected
 1. [x] Add robots.txt, sitemap.xml and a meta description to the app, so it can be indexed by search engines
 1. [x] Remove the "View transcription" button from the audio playback, as it is not needed
