@@ -4,6 +4,8 @@
 
 Building robust audio components in React requires careful consideration of state management, lifecycle handling, and performance optimization. This deep-dive explores proven patterns and common pitfalls in React audio development.
 
+> **Real-World Origin**: These patterns emerged from solving actual problems like [WebM duration issues](../webm-duration-debugging.md) and [component UX anti-patterns](../react-component-ux-patterns.md).
+
 ## 1. Component Responsibility Patterns
 
 ### 1.1 Container/Presentation Pattern
@@ -154,6 +156,8 @@ Audio.Volume = () => {
 
 ### 1.3 Hook-Based Pattern
 
+> **Event Foundation**: These hooks build on [HTML5 Audio Events](html5-audio-events.md) reliability patterns.
+
 ```tsx
 // Pattern 3: Custom hooks for reusable logic
 interface UseAudioOptions {
@@ -195,6 +199,7 @@ function useAudio(src: string, options: UseAudioOptions = {}) {
     const audio = audioRef.current;
     if (!audio) return;
 
+    // Based on HTML5 Audio Events reliability patterns
     const handlers = {
       loadstart: () => setState((prev) => ({ ...prev, loading: true })),
       loadedmetadata: () =>
@@ -912,6 +917,8 @@ describe("AudioPlayer Accessibility", () => {
 
 ### 5.1 Memory Leaks
 
+> **Production Impact**: Memory management becomes critical at scale - see [Production Considerations](production-considerations.md) for monitoring strategies.
+
 ```tsx
 // ❌ Anti-pattern: Not cleaning up audio resources
 const BadAudioComponent = ({ src }) => {
@@ -1053,6 +1060,14 @@ const GoodAudioPlayer = ({ src }) => {
 ## Conclusion
 
 Building robust React audio components requires careful attention to state management, performance optimization, and proper resource cleanup. The patterns outlined here provide a foundation for creating scalable, maintainable audio applications while avoiding common pitfalls.
+
+## Related Articles
+
+- **[WebM Duration Debugging](../webm-duration-debugging.md)** - Real debugging case that led to these patterns
+- **[React Component UX Patterns](../react-component-ux-patterns.md)** - UX lessons learned from component architecture
+- **[HTML5 Audio Events](html5-audio-events.md)** - Event handling foundation for these components
+- **[Cross-Origin Audio](cross-origin-audio.md)** - Security considerations for audio components
+- **[Production Considerations](production-considerations.md)** - Scaling these patterns to production
 
 ## Further Reading
 

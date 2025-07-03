@@ -4,6 +4,8 @@
 
 Mastering HTML5 audio requires understanding the complete event lifecycle, timing dependencies, and cross-browser reliability patterns. This deep-dive covers everything from basic event sequencing to advanced state management strategies.
 
+> **Practical Context**: These patterns solve real issues like the [WebM duration debugging](../webm-duration-debugging.md) problem and inform [React Audio Architecture](react-audio-architecture.md) decisions.
+
 ## 1. Audio Element Event Lifecycle
 
 ### 1.1 Complete Event Sequence
@@ -83,6 +85,8 @@ function monitorReadyState(audio) {
 ## 2. Event Reliability Patterns
 
 ### 2.1 Cross-Browser Event Consistency
+
+> **WebM Context**: The `loadedmetadata` reliability issues here directly relate to the [WebM Format Analysis](webm-format-analysis.md) container limitations.
 
 ```javascript
 // Events that fire reliably across browsers
@@ -268,6 +272,8 @@ class AudioStateManager {
 ```
 
 ### 3.2 React Hook Implementation
+
+> **Architecture**: This hook pattern is detailed in [React Audio Architecture](react-audio-architecture.md) with additional component patterns.
 
 ```typescript
 // Custom hook for audio state management
@@ -637,6 +643,14 @@ const safariOptimizations = {
 ## Conclusion
 
 Mastering HTML5 audio events requires understanding the complex interplay between browser implementations, network conditions, and user interactions. The patterns and strategies outlined here provide a foundation for building robust audio applications that work reliably across all modern browsers.
+
+## Related Articles
+
+- **[WebM Duration Debugging](../webm-duration-debugging.md)** - Real debugging case study using these event patterns
+- **[WebM Format Analysis](webm-format-analysis.md)** - Why certain events are unreliable with WebM files
+- **[React Audio Architecture](react-audio-architecture.md)** - Implementing these patterns in React components
+- **[Cross-Origin Audio](cross-origin-audio.md)** - CORS considerations for audio events
+- **[Production Considerations](production-considerations.md)** - Monitoring audio events in production
 
 ## Further Reading
 

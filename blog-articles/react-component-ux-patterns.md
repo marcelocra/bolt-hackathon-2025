@@ -2,7 +2,7 @@
 
 ## The UX Problem
 
-After fixing our audio duration issue, we discovered a confusing user experience:
+After fixing our [audio duration issue](webm-duration-debugging.md), we discovered a confusing user experience:
 
 ```tsx
 // Problem: Two competing play buttons
@@ -17,6 +17,8 @@ After fixing our audio duration issue, we discovered a confusing user experience
 ```
 
 **User confusion**: "I clicked play, why is there another play button? Which one actually plays the audio?"
+
+> **Technical Context**: This UX issue emerged after implementing the WebM duration fallback strategy. Understanding the [React Audio Architecture](deep-dives/react-audio-architecture.md) patterns helps prevent such problems.
 
 ## Component Responsibility Analysis
 
@@ -83,6 +85,8 @@ className={`${
 
 When user clicks "show player", they expect immediate playback:
 
+> **Implementation Details**: The auto-play mechanics tie into [HTML5 Audio Events](deep-dives/html5-audio-events.md) lifecycle management.
+
 ```tsx
 // Auto-start when AudioPlayer mounts
 useEffect(() => {
@@ -97,6 +101,8 @@ useEffect(() => {
 ## Event Synchronization
 
 Proper state sync between HTML5 audio and React:
+
+> **Deep Dive**: For comprehensive event handling patterns, see [HTML5 Audio Events](deep-dives/html5-audio-events.md).
 
 ```tsx
 // Listen to actual audio events, not just button clicks
@@ -136,3 +142,9 @@ User clicks HistoryList button → Audio starts playing immediately → Player s
 ```
 
 The lesson: **Component architecture should enhance user experience, not complicate it.**
+
+## Related Articles
+
+- **[WebM Duration Debugging](webm-duration-debugging.md)** - The technical fix that led to this UX discovery
+- **[React Audio Architecture](deep-dives/react-audio-architecture.md)** - Comprehensive patterns for React audio components
+- **[Production Considerations](deep-dives/production-considerations.md)** - A/B testing and UX optimization strategies

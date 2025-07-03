@@ -4,9 +4,13 @@
 
 Audio applications often deal with files stored across different domains, requiring careful CORS handling, security policies, and access control. This deep-dive covers the complexities of cross-origin audio delivery and production-ready implementation patterns.
 
+> **Context**: These security patterns complement the [React Audio Architecture](react-audio-architecture.md) components and address [Production Considerations](production-considerations.md) for scalable audio apps.
+
 ## 1. CORS in Audio Context
 
 ### 1.1 Why Audio Has Special CORS Requirements
+
+> **Event Impact**: CORS issues can affect [HTML5 Audio Events](html5-audio-events.md) reliability and error handling.
 
 ```javascript
 // Audio elements have stricter CORS requirements than other media
@@ -189,6 +193,8 @@ class CDNAudioService {
 ## 3. Progressive Loading and Streaming
 
 ### 3.1 Range Request Implementation
+
+> **Format Considerations**: Progressive loading is especially important for [WebM files](webm-format-analysis.md) due to metadata limitations.
 
 ```typescript
 // Progressive audio loading with range requests
@@ -550,6 +556,13 @@ class AudioPerformanceMonitor {
 ## Conclusion
 
 Cross-origin audio delivery requires careful consideration of security, performance, and user experience. The patterns outlined here provide a foundation for building robust audio applications that handle CORS complexities gracefully while maintaining security and performance standards.
+
+## Related Articles
+
+- **[React Audio Architecture](react-audio-architecture.md)** - Component patterns that work with these security strategies
+- **[HTML5 Audio Events](html5-audio-events.md)** - Event handling in cross-origin contexts
+- **[WebM Format Analysis](webm-format-analysis.md)** - Format-specific considerations for streaming
+- **[Production Considerations](production-considerations.md)** - Monitoring and error handling for cross-origin audio
 
 ## Further Reading
 

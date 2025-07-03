@@ -4,6 +4,8 @@
 
 Understanding why WebM files from the browser's MediaRecorder API lack reliable duration metadata requires diving into the WebM container format and how browsers implement streaming audio recording.
 
+> **Real-World Context**: This technical deep-dive explains the root cause behind the [WebM Duration Debugging](../webm-duration-debugging.md) mystery we encountered in production.
+
 ## 1. WebM Container Format Analysis
 
 ### 1.1 WebM vs Other Formats
@@ -74,9 +76,13 @@ recorder.onstop = () => {
 - **Opus codec**: Variable bitrate makes duration calculation complex
 - **Browser implementation**: Focuses on streaming efficiency over metadata
 
+> **Event Handling**: Understanding these limitations is crucial for [HTML5 Audio Events](html5-audio-events.md) reliability patterns.
+
 ## 3. Technical Solutions and Workarounds
 
 ### 3.1 Client-side Duration Tracking
+
+> **Implementation**: This pattern was used in our [React Audio Components](react-audio-architecture.md) to solve the duration issue.
 
 ```javascript
 // Track recording duration manually
@@ -209,6 +215,13 @@ class ProductionRecorder {
 ## Conclusion
 
 The WebM duration issue stems from fundamental design decisions in the MediaRecorder API that prioritize streaming efficiency over metadata completeness. Understanding this trade-off allows developers to implement appropriate workarounds while leveraging WebM's benefits for real-time audio recording.
+
+## Related Articles
+
+- **[WebM Duration Debugging](../webm-duration-debugging.md)** - Real-world debugging story that led to this analysis
+- **[HTML5 Audio Events](html5-audio-events.md)** - Event reliability patterns for WebM and other formats
+- **[Cross-Origin Audio](cross-origin-audio.md)** - CORS and security considerations for audio delivery
+- **[Production Considerations](production-considerations.md)** - Monitoring and error handling strategies
 
 ## Further Reading
 

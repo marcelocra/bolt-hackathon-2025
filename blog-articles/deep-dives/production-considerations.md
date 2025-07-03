@@ -4,6 +4,8 @@
 
 Moving audio applications from development to production requires comprehensive monitoring, error handling, and user experience optimization. This deep-dive covers the operational concerns that separate robust production apps from simple demos.
 
+> **Foundation**: These production patterns build on [React Audio Architecture](react-audio-architecture.md) components and [Cross-Origin Audio](cross-origin-audio.md) security strategies.
+
 ## 1. Error Monitoring and Observability
 
 ### 1.1 Comprehensive Error Classification
@@ -95,6 +97,8 @@ class AudioErrorMonitor {
 ```
 
 ### 1.2 Real-Time Performance Monitoring
+
+> **Event Tracking**: Performance monitoring leverages [HTML5 Audio Events](html5-audio-events.md) for accurate timing metrics.
 
 ```javascript
 // Performance monitoring for audio applications
@@ -307,6 +311,8 @@ class AudioAnalytics {
 ```
 
 ### 2.2 A/B Testing Framework
+
+> **UX Validation**: A/B testing helps validate solutions to problems like [component UX anti-patterns](../react-component-ux-patterns.md).
 
 ```javascript
 // A/B testing for audio UX optimization
@@ -697,6 +703,8 @@ class AudioAccessibilityTester {
 
 ### 4.1 Memory Management
 
+> **Architecture Scaling**: Memory management patterns extend the [React Audio Architecture](react-audio-architecture.md) cleanup strategies to production scale.
+
 ```javascript
 // Production memory management for audio applications
 class AudioMemoryManager {
@@ -1085,6 +1093,15 @@ class AudioFeatureFlags {
 ## Conclusion
 
 Production audio applications require comprehensive monitoring, analytics, and operational excellence. The patterns outlined here provide a foundation for building resilient, scalable audio services that deliver exceptional user experiences while maintaining operational visibility and control.
+
+## Related Articles
+
+- **[WebM Duration Debugging](../webm-duration-debugging.md)** - Real debugging case study that informed these monitoring strategies
+- **[React Component UX Patterns](../react-component-ux-patterns.md)** - UX lessons that drive A/B testing approaches
+- **[React Audio Architecture](react-audio-architecture.md)** - Component patterns that scale to production
+- **[HTML5 Audio Events](html5-audio-events.md)** - Event handling foundation for monitoring
+- **[Cross-Origin Audio](cross-origin-audio.md)** - Security considerations for production deployment
+- **[WebM Format Analysis](webm-format-analysis.md)** - Format-specific monitoring requirements
 
 ## Further Reading
 
