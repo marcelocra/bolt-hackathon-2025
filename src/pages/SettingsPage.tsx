@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Settings,
   User,
@@ -7,43 +7,71 @@ import {
   Bell,
   Shield,
   Trash2,
+  ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router";
 
 /**
  * Settings page for user preferences and app configuration
  */
 
+const SETTINGS_KEY = "janusarc-settings";
+
 export const SettingsPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState({
-    defaultLanguage: "en",
+    defaultLanguage: "eng",
     autoDetectLanguage: true,
     notifications: true,
     highQualityAudio: true,
     autoSaveRecordings: true,
   });
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem(SETTINGS_KEY);
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        setSettings(parsed);
+      } catch (error) {
+        console.error("Failed to parse saved settings:", error);
+      }
+    }
+  }, []);
 
   const handleSettingChange = (key: string, value: boolean | string) => {
     setSettings((prev) => ({
       ...prev,
       [key]: value,
     }));
-    // TODO: Save settings to backend/localStorage
-    console.log(`Setting ${key} changed to:`, value);
+    setHasChanges(true);
+  };
+
+  const saveSettings = () => {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      setHasChanges(false);
+      console.log("Settings saved successfully");
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+    }
   };
 
   const languages = [
-    { code: "en", name: "English" },
-    { code: "es", name: "Spanish" },
-    { code: "fr", name: "French" },
-    { code: "de", name: "German" },
-    { code: "it", name: "Italian" },
-    { code: "pt", name: "Portuguese" },
-    { code: "ru", name: "Russian" },
-    { code: "ja", name: "Japanese" },
-    { code: "ko", name: "Korean" },
-    { code: "zh", name: "Chinese" },
+    { code: "eng", name: "English" },
+    { code: "spa", name: "Spanish" },
+    { code: "fra", name: "French" },
+    { code: "deu", name: "German" },
+    { code: "ita", name: "Italian" },
+    { code: "por", name: "Portuguese" },
+    { code: "rus", name: "Russian" },
+    { code: "jpn", name: "Japanese" },
+    { code: "kor", name: "Korean" },
+    { code: "zho", name: "Chinese" },
   ];
 
   return (
@@ -52,6 +80,13 @@ export const SettingsPage: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+              title="Go back"
+            >
+              <ArrowLeft className="w-6 h-6 text-slate-400" />
+            </button>
             <Settings className="w-8 h-8 text-blue-400" />
             <h1 className="text-3xl font-bold">Settings</h1>
           </div>
@@ -279,8 +314,16 @@ export const SettingsPage: React.FC = () => {
 
         {/* Save Button */}
         <div className="mt-8 flex justify-end">
-          <button className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors">
-            Save Changes
+          <button
+            onClick={saveSettings}
+            disabled={!hasChanges}
+            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+              hasChanges
+                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                : "bg-slate-600 text-slate-400 cursor-not-allowed"
+            }`}
+          >
+            {hasChanges ? "Save Changes" : "No Changes"}
           </button>
         </div>
       </div>

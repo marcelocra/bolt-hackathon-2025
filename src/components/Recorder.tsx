@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   Mic,
   Square,
@@ -11,10 +11,11 @@ import {
 } from "lucide-react";
 import { ApiService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { getUserSettings } from "../utils/settings";
 import type { AudioRecordingState } from "../types";
 
 /**
- * Voice recorder component with MediaRecorder integration.
+ * Ultra-compact voice recorder component with single-row design
  */
 
 interface RecorderProps {
@@ -32,9 +33,25 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
     error: null,
   });
   const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState(() =>
-    ApiService.detectUserLanguage()
-  );
+  const [selectedLanguage, setSelectedLanguage] = useState(() => {
+    const userSettings = getUserSettings();
+    console.log("Initial recorder settings:", userSettings);
+    console.log("Setting selectedLanguage to:", userSettings.defaultLanguage);
+    // Always start with the user's default language, regardless of auto-detect setting
+    // This gives them a proper starting point and shows their preference
+    return userSettings.defaultLanguage;
+  });
+
+  // Update language when recording stops to respect settings
+  useEffect(() => {
+    if (recordingState.audioBlob) {
+      const userSettings = getUserSettings();
+      // If auto-detect is enabled, we could auto-detect, but for UX consistency,
+      // let's keep showing their default language so they can change it if needed
+      // Always show the user's default language in the dropdown
+      setSelectedLanguage(userSettings.defaultLanguage);
+    }
+  }, [recordingState.audioBlob]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -43,7 +60,6 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
 
   const startRecording = useCallback(async () => {
     try {
-      // Check for microphone permissions first
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -53,7 +69,6 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
         },
       });
 
-      // Check if MediaRecorder is supported
       if (!MediaRecorder.isTypeSupported("audio/webm")) {
         throw new Error("Audio recording is not supported in this browser");
       }
@@ -78,8 +93,6 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
           isRecording: false,
           audioBlob,
         }));
-
-        // Stop all tracks to release microphone
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -93,9 +106,8 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
         stream.getTracks().forEach((track) => track.stop());
       };
 
-      mediaRecorder.start(1000); // Collect data every second
+      mediaRecorder.start(1000);
 
-      // Start duration timer
       const startTime = Date.now();
       intervalRef.current = setInterval(() => {
         setRecordingState((prev) => ({
@@ -138,7 +150,6 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && recordingState.isRecording) {
       mediaRecorderRef.current.stop();
-
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -192,12 +203,10 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
     setRecordingState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // Validate audio blob
       if (recordingState.audioBlob.size === 0) {
         throw new Error("Recording is empty. Please try recording again.");
       }
 
-      // Upload original audio first
       const fileName = `recording_${Date.now()}.webm`;
       const originalAudioUrl = await ApiService.uploadAudio(
         recordingState.audioBlob,
@@ -211,34 +220,41 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
         );
       }
 
-      // Process audio for transcription
-      console.log("Processing audio for transcription...");
+      // Determine the language to use for processing
+      const userSettings = getUserSettings();
+      const languageForProcessing = userSettings.autoDetectLanguage
+        ? ApiService.detectUserLanguage() // Use auto-detected language for processing
+        : selectedLanguage; // Use the manually selected language
+
+      console.log(
+        "Processing audio for transcription with language:",
+        languageForProcessing,
+        "(auto-detect:",
+        userSettings.autoDetectLanguage,
+        ")"
+      );
       const processResult = await ApiService.processAudio(
         recordingState.audioBlob,
-        selectedLanguage
+        languageForProcessing
       );
 
-      // Generate a more descriptive title
       const now = new Date();
       const title = `Founder Log - ${now.toLocaleDateString()} ${now.toLocaleTimeString(
         [],
         { hour: "2-digit", minute: "2-digit" }
       )}`;
 
-      // Save entry to database
       const entry = await ApiService.saveEntry({
         user_id: user.id,
         title,
         original_audio_url: originalAudioUrl,
-        processed_audio_url: originalAudioUrl, // Use original URL since we're not processing audio anymore
+        processed_audio_url: originalAudioUrl,
         transcription: processResult.transcription,
         duration: recordingState.duration,
       });
 
       if (entry) {
         console.log("Entry saved successfully:", entry.id);
-
-        // Reset recording state
         setRecordingState({
           isRecording: false,
           isLoading: false,
@@ -247,7 +263,6 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
           duration: 0,
           error: null,
         });
-
         onEntryCreated?.();
       } else {
         throw new Error(
@@ -273,26 +288,16 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
     selectedLanguage,
   ]);
 
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
   const resetRecording = useCallback(() => {
     setIsDeleting(true);
-
-    // Animate the deletion
     setTimeout(() => {
       if (audioRef.current) {
         audioRef.current.pause();
       }
-
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-
       setRecordingState({
         isRecording: false,
         isLoading: false,
@@ -301,10 +306,15 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
         duration: 0,
         error: null,
       });
-
       setIsDeleting(false);
-    }, 300); // 300ms animation duration
+    }, 300);
   }, []);
+
+  const formatDuration = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -320,93 +330,95 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-slate-700/50">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-white mb-2">AI Founder Log</h2>
-          <p className="text-slate-400">
-            Capture your startup insights and decisions
-          </p>
+      <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-4 shadow-2xl border border-slate-700/50">
+        {/* Ultra-compact header */}
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-lg font-bold text-white">AI Founder Log</h2>
+            <p className="text-xs text-slate-400">
+              Capture your startup insights
+            </p>
+          </div>
         </div>
 
-        {/* Recording Controls */}
-        <div className="flex flex-col items-center space-y-6">
-          {!recordingState.audioBlob ? (
-            // Initial recording state
-            <div className="flex flex-col items-center space-y-4">
-              <button
-                onClick={
-                  recordingState.isRecording ? stopRecording : startRecording
-                }
-                disabled={recordingState.isLoading}
-                className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
-                  recordingState.isRecording
-                    ? "bg-red-500 hover:bg-red-600 animate-pulse shadow-red-500/25"
-                    : "bg-blue-500 hover:bg-blue-600 shadow-blue-500/25"
-                }`}
-              >
-                {recordingState.isRecording ? (
-                  <Square className="w-8 h-8 text-white" />
-                ) : (
-                  <Mic className="w-8 h-8 text-white" />
-                )}
-              </button>
+        {/* Single-row interface */}
+        {!recordingState.audioBlob ? (
+          // Recording interface - all in one row
+          <div className="flex items-center gap-4 bg-slate-700/30 rounded-lg p-3">
+            <button
+              onClick={
+                recordingState.isRecording ? stopRecording : startRecording
+              }
+              disabled={recordingState.isLoading}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
+                recordingState.isRecording
+                  ? "bg-red-500 hover:bg-red-600 animate-pulse shadow-red-500/25"
+                  : "bg-blue-500 hover:bg-blue-600 shadow-blue-500/25"
+              }`}
+            >
+              {recordingState.isRecording ? (
+                <Square className="w-5 h-5 text-white" />
+              ) : (
+                <Mic className="w-5 h-5 text-white" />
+              )}
+            </button>
 
-              <div className="text-center">
+            <div className="flex-1 flex items-center justify-between">
+              <div>
                 <p className="text-white font-mono text-lg">
                   {formatDuration(recordingState.duration)}
                 </p>
-                <p className="text-slate-400 text-sm">
-                  {recordingState.isRecording
-                    ? "Recording... Tap to stop"
-                    : "Tap to start recording"}
-                </p>
               </div>
+              <p className="text-slate-400 text-sm">
+                {recordingState.isRecording
+                  ? "Recording... Tap to stop"
+                  : "Tap to start recording"}
+              </p>
             </div>
-          ) : (
-            // Playback and save controls
-            <div
-              className={`flex flex-col items-center space-y-6 w-full transition-all duration-300 ${
-                isDeleting
-                  ? "opacity-0 scale-95 transform"
-                  : "opacity-100 scale-100"
-              }`}
-            >
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={
-                    recordingState.isPlaying ? pausePlayback : playRecording
-                  }
-                  disabled={recordingState.isLoading || isDeleting}
-                  className="w-12 h-12 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
-                >
-                  {recordingState.isPlaying ? (
-                    <Pause className="w-5 h-5 text-white" />
-                  ) : (
-                    <Play className="w-5 h-5 text-white ml-0.5" />
-                  )}
-                </button>
-
-                <div className="text-center">
-                  <p className="text-white font-mono">
-                    {formatDuration(recordingState.duration)}
-                  </p>
-                  <p className="text-slate-400 text-sm">
-                    {recordingState.isPlaying ? "Playing..." : "Ready to save"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Language Selection - only shown after recording */}
-              <div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600/50">
+          </div>
+        ) : (
+          // Save interface - compact and inline
+          <div
+            className={`space-y-3 transition-all duration-300 ${
+              isDeleting
+                ? "opacity-0 scale-95 transform"
+                : "opacity-100 scale-100"
+            }`}
+          >
+            {/* Playback and controls in one row */}
+            <div className="bg-slate-700/30 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
+                  <button
+                    onClick={
+                      recordingState.isPlaying ? pausePlayback : playRecording
+                    }
+                    disabled={recordingState.isLoading || isDeleting}
+                    className="w-10 h-10 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
+                  >
+                    {recordingState.isPlaying ? (
+                      <Pause className="w-4 h-4 text-white" />
+                    ) : (
+                      <Play className="w-4 h-4 text-white ml-0.5" />
+                    )}
+                  </button>
+                  <div>
+                    <p className="text-white font-mono text-sm">
+                      {formatDuration(recordingState.duration)}
+                    </p>
+                    <p className="text-slate-400 text-xs">
+                      {recordingState.isPlaying ? "Playing..." : "Preview"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Language selection inline */}
+                <div className="flex items-center space-x-2">
                   <Globe className="w-4 h-4 text-slate-400" />
-                  <span className="text-slate-300 text-sm font-medium">
-                    Transcription Language:
-                  </span>
                   <select
                     value={selectedLanguage}
                     onChange={(e) => setSelectedLanguage(e.target.value)}
-                    className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     disabled={recordingState.isLoading || isDeleting}
                   >
                     {ApiService.getSupportedLanguages().map((lang) => (
@@ -418,11 +430,12 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
                 </div>
               </div>
 
-              <div className="flex space-x-3 w-full">
+              {/* Action buttons */}
+              <div className="flex space-x-3">
                 <button
                   onClick={resetRecording}
                   disabled={recordingState.isLoading || isDeleting}
-                  className={`flex-1 py-3 px-4 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-600/50 text-white rounded-lg transition-all duration-200 font-medium ${
+                  className={`flex-1 py-2.5 px-4 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-600/50 text-white rounded-lg transition-all duration-200 font-medium text-sm ${
                     isDeleting ? "bg-red-500 animate-pulse" : ""
                   }`}
                 >
@@ -432,7 +445,7 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
                 <button
                   onClick={saveRecording}
                   disabled={recordingState.isLoading || isDeleting}
-                  className="flex-1 py-3 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 font-medium shadow-lg hover:shadow-blue-500/25"
+                  className="flex-1 py-2.5 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 font-medium shadow-lg hover:shadow-blue-500/25 text-sm"
                 >
                   {recordingState.isLoading ? (
                     <>
@@ -442,47 +455,27 @@ export const Recorder: React.FC<RecorderProps> = ({ onEntryCreated }) => {
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      <span>Save</span>
+                      <span>Save Recording</span>
                     </>
                   )}
                 </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Error Message */}
         {recordingState.error && (
-          <div className="mt-6 bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+          <div className="mt-3 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+            <div className="flex items-start space-x-2">
+              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-red-400 text-sm font-medium mb-1">
-                  Recording Error
-                </p>
-                <p className="text-red-300 text-sm">{recordingState.error}</p>
+                <p className="text-red-400 text-xs font-medium mb-1">Error</p>
+                <p className="text-red-300 text-xs">{recordingState.error}</p>
               </div>
             </div>
           </div>
         )}
-
-        {/* Recording tips */}
-        {!recordingState.isRecording &&
-          !recordingState.audioBlob &&
-          !recordingState.error && (
-            <div className="mt-6 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-blue-400 text-sm font-medium mb-2">
-                  Founder Tips
-                </p>
-                <ul className="text-blue-300 text-xs space-y-1">
-                  <li>• Record key decisions and their reasoning</li>
-                  <li>• Capture market insights and customer feedback</li>
-                  <li>• Document lessons learned and pivots</li>
-                </ul>
-              </div>
-            </div>
-          )}
       </div>
     </div>
   );

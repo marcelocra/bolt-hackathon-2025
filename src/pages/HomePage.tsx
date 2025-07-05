@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Navigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { Recorder } from "../components/Recorder";
-import { HistoryList } from "../components/HistoryList";
+import { AudioLogs } from "../components/AudioLogs";
 import { UserProfile } from "../components/UserProfile";
 import { Logo } from "../components/Logo";
 
@@ -71,9 +71,9 @@ export const HomePage: React.FC = () => {
             <Recorder onEntryCreated={handleEntryCreated} />
           </section>
 
-          {/* History section */}
+          {/* Audio Logs section */}
           <section className="flex justify-center">
-            <HistoryList refreshTrigger={refreshTrigger} />
+            <AudioLogs refreshTrigger={refreshTrigger} />
           </section>
         </div>
       </main>
